@@ -1,0 +1,15 @@
+# Зависимости и артефакты сборки
+node_modules/
+VirtualMax/desktop/node_modules/
+VirtualMax/desktop/dist/
+VirtualMax/mobile/build/
+
+# Логи и системные файлы
+*.log
+.DS_Store
+Thumbs.db
+
+# Локальные настройки сред
+.idea/
+*.iml
+.vscode/
