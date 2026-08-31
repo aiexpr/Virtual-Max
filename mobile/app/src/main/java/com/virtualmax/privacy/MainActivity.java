@@ -423,6 +423,13 @@ public class MainActivity extends Activity {
         });
 
         switchGhost.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                prefs.edit().putBoolean(KEY_GHOST, isChecked).apply();
+                injectSandbox();
+                Toast.makeText(MainActivity.this, isChecked ? "👻 Режим Невидимки: ВКЛЮЧЁН" : "👻 Режим Невидимки: ВЫКЛЮЧЕН", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         switchDesktop.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override

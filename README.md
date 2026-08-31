@@ -51,8 +51,8 @@
 ```text
 VirtualMax/
 ├── .github/workflows/
-│   ├── build-android.yml    # CI/CD автосборка APK для Android
-│   └── build-desktop.yml    # CI/CD автосборка .exe, .AppImage, .dmg для ПК
+│   ├── build-android.yml    # CI/CD автосборка подписанного APK для Android
+│   └── build-desktop.yml    # CI/CD автосборка .exe, .AppImage, .deb, .dmg для ПК
 ├── mobile/                  # Исходный код приложения для Android
 │   ├── app/                 # Java код, ресурсы, манифест
 │   ├── build.gradle         # Gradle конфигурация
@@ -96,6 +96,22 @@ VirtualMax/
   npm run build:linux  # .AppImage и .deb для Linux
   npm run build:mac    # .dmg для macOS
   ```
+
+---
+
+---
+
+## 📈 История версий
+
+### v1.2.0 (текущая)
+- Исправлена критическая ошибка компиляции Android (обработчик тумблера «Режим Невидимки»).
+- Расширены списки блокировки трекеров на **обеих платформах** — добавлены `tns-counter.ru`, `top100.rambler.ru`, `adriver.ru`, `rutarget.ru`, `yandexads.com`, `googleadservices.com`, `doubleclick.net`, `criteo.com`, `moatads.com`, `scorecardresearch.com`, `taboola.com`, `outbrain.com`, `newrelic.com`, `sentry-cdn.com` и др.
+- Тумблер «Режим Невидимки» (Ghost Mode) теперь полностью функционален на Android.
+- Обновлена брендированная иконка (белый пузырёк МАКС с изумрудной литерой «V»).
+- Добавлена автоматическая CI/CD-сборка релизов (`.github/workflows/`).
+
+### v1.1.0
+- Поддержка SOCKS5/HTTP прокси, маскировка параметров железа, нейтрализация `sendBeacon`.
 
 ---
 

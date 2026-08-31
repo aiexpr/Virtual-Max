@@ -60,6 +60,24 @@ public class PrivacyInterceptor {
         Pattern.compile("app\\.adjust\\.com", Pattern.CASE_INSENSITIVE),
         Pattern.compile("appsflyer\\.com", Pattern.CASE_INSENSITIVE),
 
+        // Дополнительные сети аналитики и рекламных трекеров
+        Pattern.compile("tns-counter\\.ru", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("top100\\.rambler\\.ru", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("adriver\\.ru", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("rutarget\\.ru", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("yandexads\\.com", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("ads\\.yandex\\.ru", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("googleadservices\\.com", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("adservice\\.google\\.com", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("doubleclick\\.net", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("criteo\\.com", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("moatads\\.com", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("scorecardresearch\\.com", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("taboola\\.com", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("outbrain\\.com", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("newrelic\\.com", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("sentry-cdn\\.com", Pattern.CASE_INSENSITIVE),
+
         // Внутренние эндпоинты телеметрии MAX
         Pattern.compile("/api/v?\\d*/(?:telemetry|metrics|analytics|stats|collector|event(?:s)?|beacon|client_log|crash_report)", Pattern.CASE_INSENSITIVE),
         Pattern.compile("/(?:telemetry|tracking|collector|beacon|webvisor|metrika|c_stat|stat_out|log_event)", Pattern.CASE_INSENSITIVE),
