@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VirtualMax Desktop — Мессенджер МАКС</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Верхняя панель управления -->
+  <header id="top-bar">
+    <div class="nav-group">
+      <button id="btn-back" class="btn-icon" title="Назад (Alt+Left)">◀</button>
+      <button id="btn-forward" class="btn-icon" title="Вперед (Alt+Right)">▶</button>
+      <button id="btn-reload" class="btn-icon" title="Перезагрузить (F5)">🔄</button>
+      <button id="btn-home" class="btn-icon" title="Домой (web.max.ru)">🏠</button>
+    </div>
+
+    <div class="status-badge" id="btn-shield-status" title="Статус защиты VirtualMax">
+      <span class="pulse-dot"></span>
+      <span id="txt-shield-status">🛡️ VirtualMax: 0 трекеров заблокировано</span>
+    </div>
+
+    <div class="controls-group">
+      <div class="zoom-box">
+        <button id="btn-zoom-out" class="btn-sm" title="Уменьшить масштаб">-</button>
+        <span id="zoom-label">100%</span>
+        <button id="btn-zoom-in" class="btn-sm" title="Увеличить масштаб">+</button>
+      </div>
+      <button id="btn-toggle-settings" class="btn-primary" title="Настройки и Гайд">⚙️ Настройки &amp; Гайд</button>
+      <button id="btn-top-clear" class="btn-danger" title="Экстренная очистка сессии">🧹</button>
+    </div>
+  </header>
+
+  <!-- Основная рабочая область -->
+  <main id="main-area">
+    <webview
+      id="max-webview"
+      src="https://web.max.ru"
+      partition="persist:virtualmax_desktop_session"
+      allowpopups
+      webpreferences="contextIsolation=yes, sandbox=no"
+    ></webview>
+
+    <!-- Оверлей настроек и гайда -->
+    <div id="settings-overlay" class="settings-overlay hidden">
+      <div class="settings-card">
+        <div class="settings-header">
+          <div class="title-with-logo">
+            <img src="../../assets/icon.png" width="28" height="28" alt="Logo">
+            <h2>VirtualMax Desktop — Настройки и Гайд</h2>
+          </div>
+          <button id="btn-close-settings" class="btn-close">&times;</button>
+        </div>
+
+        <div class="settings-body">
+          <!-- Раздел 1: Разрешения устройств -->
+          <div class="section-title">РАЗРЕШЕНИЯ УСТРОЙСТВ</div>
+          
+          <div class="setting-row">
+            <div class="setting-text">
+              <strong>🎙️ Доступ к микрофону</strong>
+              <p>Разрешить голосовые сообщения и аудиозвонки в мессенджере</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="chk-mic" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-text">
+              <strong>📷 Доступ к камере</strong>
+              <p>Разрешить видеозвонки и съемку фото с веб-камеры</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="chk-camera">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-text">
+              <strong>🔔 Системные уведомления</strong>
+              <p>Отображать всплывающие уведомления о входящих сообщениях</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="chk-notifications" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- Раздел 2: Приватность -->
+          <div class="section-title mt-4">ФУНКЦИИ ПРИВАТНОСТИ</div>
+
+          <div class="setting-row">
+            <div class="setting-text">
+              <strong>👻 Режим Невидимки (Ghost Mode)</strong>
+              <p>Скрывать статус «Печатает...» и онлайн-присутствие от собеседников</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="chk-ghost" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- Раздел 3: Журнал блокировки трекеров -->
+          <div class="section-title mt-4">ЖУРНАЛ ПЕРЕХВАЧЕННЫХ ТРЕКЕРОВ (LIVE INSPECTOR)</div>
+          <div class="log-box" id="live-log-box">
+            <div class="log-empty">Сетевой фильтр VirtualMax активен. Запросы слежки блокируются.</div>
+          </div>
+
+          <!-- Раздел 4: Гайд -->
+          <div class="section-title mt-4">ГАЙД: КАК ЭТО РАБОТАЕТ</div>
+          <div class="guide-box">
+            <p><strong>1. Блокировка слежки и трекеров:</strong> VirtualMax фильтрует каждый сетевой вызов. Запросы к трекерам VK/Mail.ru (top-fwz1, counter.yadro, stat.vk.com), Яндекс Метрике, WebVisor, Sentry и внутренним метрикам MAX уничтожаются до выхода в сеть.</p>
+            <p><strong>2. Анти-Фингерпринт песочница:</strong> Встроенный слой JavaScript защищает от снятия цифрового отпечатка видеокарты, процессора и нейтрализует скрытые маяки <code>navigator.sendBeacon</code>.</p>
+            <p><strong>3. Аппаратные переключатели:</strong> Если тумблер микрофона или камеры выключен, сайт физически не может получить доступ к датчикам компьютера.</p>
+            <p><strong>4. Изоляция хранилища:</strong> Сессия, cookies и кэш мессенджера изолированы в отдельной песочнице и не пересекаются с вашим основным браузером.</p>
+          </div>
+
+          <!-- Действия -->
+          <div class="actions-group">
+            <button id="btn-purge-data" class="btn-danger-block">🧹 Очистить все cookies, кэш и сессию</button>
+            <button id="btn-back-to-chat" class="btn-primary-block">💬 Вернуться в мессенджер</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
