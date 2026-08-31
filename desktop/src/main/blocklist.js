@@ -48,7 +48,28 @@ const BLOCKED_DOMAINS = [
   'bugsnag.com',
   'datadoghq.com',
   'app.adjust.com',
-  'appsflyer.com'
+  'appsflyer.com',
+
+  // Дополнительные сети аналитики и рекламных трекеров
+  'tns-counter.ru',
+  'tm.tns-counter.ru',
+  'top100.rambler.ru',
+  'adriver.ru',
+  'rutarget.ru',
+  'yandexads.com',
+  'ads.yandex.ru',
+  'googleadservices.com',
+  'adservice.google.com',
+  'doubleclick.net',
+  'criteo.com',
+  'moatads.com',
+  'scorecardresearch.com',
+  'taboola.com',
+  'outbrain.com',
+  'newrelic.com',
+  'cdn-api.newrelic.com',
+  'sentry-cdn.com',
+  'browser.sentry-cdn.com'
 ];
 
 const BLOCKED_URL_PATTERNS = [
