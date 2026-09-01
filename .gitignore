@@ -4,6 +4,10 @@ VirtualMax/desktop/node_modules/
 VirtualMax/desktop/dist/
 VirtualMax/mobile/build/
 
+# Ключ подписи Android (хранить только в GitHub Secrets: KEYSTORE_JKS)
+VirtualMax/mobile/keystore.jks
+VirtualMax/mobile/keystore.jks.backup
+
 # Логи и системные файлы
 *.log
 .DS_Store

@@ -101,6 +101,32 @@ VirtualMax/
 
 ---
 
+## 🤖 CI/CD — автоматические сборки
+
+Сборка релизов выполняется **GitHub Actions** (файлы `.github/workflows/build-android.yml`
+и `.github/workflows/build-desktop.yml`) при создании тега `v*` или вручную через вкладку **Actions**.
+
+### Что собирается
+- **Android:** подписанный `VirtualMax.apk` кастомным скриптом (`mobile/build.sh`, **без Gradle**).
+- **Desktop:** установщики `electron-builder` нативно на каждой ОС — `.exe` (nsis) + portable
+  (Windows), `.AppImage` + `.deb` (Linux), `.dmg` + `.zip` (macOS).
+
+### Требуемые GitHub Secrets
+Пароль ключа подписи **не хранится** в YAML; он передаётся в сборку из секретов репозитория:
+
+| Секрет | Обязательность | Назначение |
+| --- | --- | --- |
+| `KEYSTORE_PASS` | Обязательно | Пароль `mobile/keystore.jks` (alias `virtualmax`). Если не задан — используется значение по умолчанию (совпадает с текущим ключом). |
+| `KEYSTORE_JKS` | Опционально (рекомендуется) | `base64`-представление самого keystore. При наличии перезаписывает `mobile/keystore.jks` — приватный ключ не хранится в git. |
+| `CSC_LINK` / `CSC_KEY_PASSWORD` | Опционально | Подпись macOS/Windows-установщиков. Без них macOS собирается с `ad-hoc` подписью (пайплайн не блокируется). |
+| `APPLE_ID` / `APPLE_APP_SPECIFIC_PASSWORD` / `APPLE_TEAM_ID` | Опционально | Нотаризация macOS. |
+
+> ⚠️ Версия тега `v*` должна совпадать с номером версии приложения. CI проверяет это
+> и останавливается с понятным сообщением при несовпадении (`mobile/app/build.gradle`,
+> `mobile/app/src/main/AndroidManifest.xml`, `desktop/package.json`).
+
+---
+
 ## 📈 История версий
 
 ### v1.2.0 (текущая)

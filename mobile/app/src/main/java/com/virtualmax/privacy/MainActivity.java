@@ -10,12 +10,15 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
+import android.view.WindowInsets;
 import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
 import android.webkit.GeolocationPermissions;
+import android.webkit.JsResult;
 import android.webkit.PermissionRequest;
 import android.webkit.URLUtil;
 import android.webkit.WebChromeClient;
@@ -109,7 +112,36 @@ public class MainActivity extends Activity {
         setupControls();
         setupSettingsToggles();
 
+        applySystemInsets();
+
         webView.loadUrl(TARGET_URL);
+    }
+
+    /**
+     * Учитываем системные панели (статус-бар и жест-навигацию), чтобы контент
+     * и нижняя панель не обрезались системной навигацией на современных
+     * устройствах (edge-to-edge).
+     */
+    private void applySystemInsets() {
+        View root = findViewById(R.id.root);
+        View topBar = findViewById(R.id.topBar);
+        View bottomBar = findViewById(R.id.bottomBar);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            root.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
+                @Override
+                public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
+                    int top = insets.getSystemWindowInsetTop();
+                    int bottom = insets.getSystemWindowInsetBottom();
+                    int left = insets.getSystemWindowInsetLeft();
+                    int right = insets.getSystemWindowInsetRight();
+
+                    topBar.setPadding(left, top, right, 0);
+                    bottomBar.setPadding(left, 0, right, bottom);
+                    return insets;
+                }
+            });
+        }
     }
 
     private void setupProxy() {
@@ -164,6 +196,66 @@ public class MainActivity extends Activity {
                         }
                     }
                 });
+            }
+
+            // Брендированные диалоги для JS alert()/confirm() из мессенджера:
+            // вместо системного серого окна показываем тёмную панель в стиле VirtualMax.
+            @Override
+            public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        new AlertDialog.Builder(MainActivity.this, R.style.VirtualMaxDialog)
+                            .setTitle("VirtualMax")
+                            .setMessage(message)
+                            .setPositiveButton("ОК", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    result.confirm();
+                                }
+                            })
+                            .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                @Override
+                                public void onCancel(DialogInterface dialog) {
+                                    result.cancel();
+                                }
+                            })
+                            .show();
+                    }
+                });
+                return true;
+            }
+
+            @Override
+            public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        new AlertDialog.Builder(MainActivity.this, R.style.VirtualMaxDialog)
+                            .setTitle("VirtualMax")
+                            .setMessage(message)
+                            .setPositiveButton("Да", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    result.confirm();
+                                }
+                            })
+                            .setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    result.cancel();
+                                }
+                            })
+                            .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                @Override
+                                public void onCancel(DialogInterface dialog) {
+                                    result.cancel();
+                                }
+                            })
+                            .show();
+                    }
+                });
+                return true;
             }
 
             @Override
