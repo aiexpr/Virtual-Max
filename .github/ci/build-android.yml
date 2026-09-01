@@ -1,0 +1,112 @@
+# ============================================================
+# VirtualMax — CI/CD: сборка подписанного APK для Android
+# Запуск: push тега v* или вручную (workflow_dispatch).
+# Принципы: Privacy-First, минимальный артефакт, детерминизм.
+# ============================================================
+name: Build Android APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+# Создание/обновление GitHub Release требует прав на запись в репозиторий.
+# actions: write — для загрузки/скачивания артефактов.
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Клонирование репозитория
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Валидация: версия тега должна совпадать с versionName в build.gradle.
+      - name: Validate version matches tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          APP_VERSION="$(grep -m1 'versionName' mobile/app/build.gradle | sed -E 's/.*"([^"]+)".*/\1/')"
+          echo "Tag version: ${TAG}  |  App versionName: ${APP_VERSION}"
+          if [ "${TAG}" != "${APP_VERSION}" ]; then
+            echo "::error::Tag v${TAG} does not match versionName ${APP_VERSION} in mobile/app/build.gradle. Please bump the app version (and versionCode) before tagging."
+            exit 1
+          fi
+
+      # 2. JDK 17 (Temurin) — требуется для javac/D8/apksigner
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # 3. Android SDK (command-line tools) + установка SDK-компонентов
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Accept Android SDK licenses
+        run: yes | sdkmanager --licenses
+
+      # Фиксируем версии SDK/build-tools (детерминизм сборки).
+      - name: Install pinned Android SDK components
+        run: |
+          sdkmanager "platforms;android-34" "build-tools;34.0.0"
+
+      # 4. Ключ подписи.
+      #    Приоритет: секрет KEYSTORE_JKS (base64) -> упакованный в репо keystore.jks.
+      #    Это позволяет хранить приватный ключ вне git при наличии секрета.
+      - name: Prepare signing keystore (from secret if provided)
+        shell: bash
+        env:
+          KEYSTORE_JKS: ${{ secrets.KEYSTORE_JKS }}
+        run: |
+          if [ -n "$KEYSTORE_JKS" ]; then
+            printf '%s' "$KEYSTORE_JKS" | base64 -d > mobile/keystore.jks
+            echo "Using keystore from secret 'KEYSTORE_JKS'."
+          else
+            echo "No 'KEYSTORE_JKS' secret set — using committed mobile/keystore.jks."
+          fi
+
+      # 5. Сборка кастомным скриптом (БЕЗ Gradle)
+      - name: Build APK with custom script
+        shell: bash
+        env:
+          # Пароль кейсторы НЕ зашит в YAML — берём из GitHub Secrets.
+          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
+          # Алиас ключа. Передаём явно для детерминизма подписи.
+          KEYSTORE_ALIAS: virtualmax
+        run: |
+          cd mobile
+          chmod +x build.sh
+          ./build.sh
+
+      # 6. Проверка артефакта
+      - name: Verify artifact exists and is non-empty
+        shell: bash
+        run: |
+          ls -lh releases/VirtualMax.apk
+          test -s releases/VirtualMax.apk
+          file releases/VirtualMax.apk || true
+
+      # 7. Загрузка артефакта в Actions (не только на теге — удобно для ручной проверки)
+      - name: Upload VirtualMax.apk artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VirtualMax.apk
+          path: releases/VirtualMax.apk
+          if-no-files-found: error
+
+      # 8. GitHub Release (только на теге v*)
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: releases/VirtualMax.apk
+          fail_on_unmatched_files: true
+          generate_release_notes: true
