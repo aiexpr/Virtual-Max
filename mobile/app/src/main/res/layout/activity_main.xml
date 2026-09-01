@@ -1,38 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/bg_main">
+    android:background="@color/bg_main"
+    android:fitsSystemWindows="false">
 
     <!-- Верхняя компактная панель -->
     <LinearLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
         android:background="@color/bg_surface"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp">
+        android:paddingLeft="6dp"
+        android:paddingRight="6dp">
 
         <Button
             android:id="@+id/btnBack"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:text="◀"
             android:textColor="@color/text_main"
-            android:textSize="14sp"
-            android:background="?android:attr/selectableItemBackground" />
+            android:textSize="15sp"
+            android:background="?android:attr/selectableItemBackgroundBorderless" />
 
         <Button
             android:id="@+id/btnReload"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:text="🔄"
             android:textColor="@color/text_main"
-            android:textSize="14sp"
-            android:background="?android:attr/selectableItemBackground" />
+            android:textSize="15sp"
+            android:background="?android:attr/selectableItemBackgroundBorderless" />
 
         <TextView
             android:id="@+id/tvShieldStatus"
@@ -41,21 +44,23 @@
             android:layout_weight="1"
             android:text="🛡️ VirtualMax: 0"
             android:textColor="@color/accent_green"
-            android:textSize="12sp"
+            android:textSize="13sp"
             android:textStyle="bold"
-            android:gravity="center" />
+            android:gravity="center"
+            android:maxLines="1" />
 
         <Button
             android:id="@+id/btnTopToggle"
             android:layout_width="wrap_content"
-            android:layout_height="36dp"
+            android:layout_height="40dp"
+            android:minWidth="0dp"
             android:text="⚙️ Настройки"
             android:textColor="@color/accent_green"
-            android:textSize="11sp"
+            android:textSize="12sp"
             android:textStyle="bold"
-            android:background="?android:attr/selectableItemBackground"
-            android:paddingLeft="6dp"
-            android:paddingRight="6dp" />
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp" />
     </LinearLayout>
 
     <!-- Основной контейнер экранов -->
@@ -77,7 +82,8 @@
             android:layout_height="match_parent"
             android:background="@color/bg_main"
             android:visibility="gone"
-            android:padding="16dp">
+            android:padding="16dp"
+            android:overScrollMode="never">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -90,9 +96,17 @@
                     android:layout_height="wrap_content"
                     android:text="🛡️ VirtualMax — Настройки и Гайд"
                     android:textColor="@color/accent_green"
-                    android:textSize="18sp"
+                    android:textSize="20sp"
                     android:textStyle="bold"
-                    android:layout_marginBottom="16dp" />
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Приватность и защита от слежки"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:layout_marginBottom="18dp" />
 
                 <!-- Блок 1: Разрешения устройств -->
                 <TextView
@@ -110,9 +124,9 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:background="@color/bg_surface"
-                    android:padding="12dp"
-                    android:layout_marginBottom="6dp">
+                    android:background="@drawable/card_bg"
+                    android:padding="14dp"
+                    android:layout_marginBottom="8dp">
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -123,19 +137,21 @@
                             android:layout_height="wrap_content"
                             android:text="🎙️ Микрофон"
                             android:textColor="@color/text_main"
-                            android:textSize="14sp"
+                            android:textSize="15sp"
                             android:textStyle="bold" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Голосовые сообщения и аудиозвонки"
                             android:textColor="@color/text_secondary"
-                            android:textSize="11sp" />
+                            android:textSize="12sp" />
                     </LinearLayout>
                     <Switch
                         android:id="@+id/switchMic"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:thumbTint="@color/accent_green"
+                        android:trackTint="@color/bg_card" />
                 </LinearLayout>
 
                 <!-- Тумблер: Камера -->
@@ -144,9 +160,9 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:background="@color/bg_surface"
-                    android:padding="12dp"
-                    android:layout_marginBottom="6dp">
+                    android:background="@drawable/card_bg"
+                    android:padding="14dp"
+                    android:layout_marginBottom="8dp">
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -157,19 +173,21 @@
                             android:layout_height="wrap_content"
                             android:text="📷 Камера"
                             android:textColor="@color/text_main"
-                            android:textSize="14sp"
+                            android:textSize="15sp"
                             android:textStyle="bold" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Видеозвонки и съемка фото в чатах"
                             android:textColor="@color/text_secondary"
-                            android:textSize="11sp" />
+                            android:textSize="12sp" />
                     </LinearLayout>
                     <Switch
                         android:id="@+id/switchCamera"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:thumbTint="@color/accent_green"
+                        android:trackTint="@color/bg_card" />
                 </LinearLayout>
 
                 <!-- Тумблер: Уведомления -->
@@ -178,9 +196,9 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:background="@color/bg_surface"
-                    android:padding="12dp"
-                    android:layout_marginBottom="14dp">
+                    android:background="@drawable/card_bg"
+                    android:padding="14dp"
+                    android:layout_marginBottom="18dp">
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -191,19 +209,21 @@
                             android:layout_height="wrap_content"
                             android:text="🔔 Уведомления"
                             android:textColor="@color/text_main"
-                            android:textSize="14sp"
+                            android:textSize="15sp"
                             android:textStyle="bold" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Push-уведомления о новых сообщениях"
                             android:textColor="@color/text_secondary"
-                            android:textSize="11sp" />
+                            android:textSize="12sp" />
                     </LinearLayout>
                     <Switch
                         android:id="@+id/switchNotifications"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:thumbTint="@color/accent_green"
+                        android:trackTint="@color/bg_card" />
                 </LinearLayout>
 
                 <!-- Блок 2: Функции приватности -->
@@ -222,9 +242,9 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:background="@color/bg_surface"
-                    android:padding="12dp"
-                    android:layout_marginBottom="6dp">
+                    android:background="@drawable/card_bg"
+                    android:padding="14dp"
+                    android:layout_marginBottom="8dp">
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -235,19 +255,21 @@
                             android:layout_height="wrap_content"
                             android:text="👻 Режим Невидимки"
                             android:textColor="@color/text_main"
-                            android:textSize="14sp"
+                            android:textSize="15sp"
                             android:textStyle="bold" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Скрывать статус «Печатает...» от собеседников"
                             android:textColor="@color/text_secondary"
-                            android:textSize="11sp" />
+                            android:textSize="12sp" />
                     </LinearLayout>
                     <Switch
                         android:id="@+id/switchGhost"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:thumbTint="@color/accent_green"
+                        android:trackTint="@color/bg_card" />
                 </LinearLayout>
 
                 <!-- Тумблер: Режим ПК -->
@@ -256,9 +278,9 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:background="@color/bg_surface"
-                    android:padding="12dp"
-                    android:layout_marginBottom="6dp">
+                    android:background="@drawable/card_bg"
+                    android:padding="14dp"
+                    android:layout_marginBottom="8dp">
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -269,19 +291,21 @@
                             android:layout_height="wrap_content"
                             android:text="🖥️ Режим ПК (Desktop Version)"
                             android:textColor="@color/text_main"
-                            android:textSize="14sp"
+                            android:textSize="15sp"
                             android:textStyle="bold" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Отображать десктопную версию интерфейса"
                             android:textColor="@color/text_secondary"
-                            android:textSize="11sp" />
+                            android:textSize="12sp" />
                     </LinearLayout>
                     <Switch
                         android:id="@+id/switchDesktop"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:thumbTint="@color/accent_green"
+                        android:trackTint="@color/bg_card" />
                 </LinearLayout>
 
                 <!-- Масштаб текста -->
@@ -290,9 +314,9 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:background="@color/bg_surface"
-                    android:padding="12dp"
-                    android:layout_marginBottom="14dp">
+                    android:background="@drawable/card_bg"
+                    android:padding="14dp"
+                    android:layout_marginBottom="18dp">
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -303,7 +327,7 @@
                             android:layout_height="wrap_content"
                             android:text="🔍 Масштаб текста"
                             android:textColor="@color/text_main"
-                            android:textSize="14sp"
+                            android:textSize="15sp"
                             android:textStyle="bold" />
                         <TextView
                             android:id="@+id/tvZoomValue"
@@ -311,25 +335,25 @@
                             android:layout_height="wrap_content"
                             android:text="Текущий масштаб: 100%"
                             android:textColor="@color/text_secondary"
-                            android:textSize="11sp" />
+                            android:textSize="12sp" />
                     </LinearLayout>
                     <Button
                         android:id="@+id/btnZoomMinus"
-                        android:layout_width="40dp"
-                        android:layout_height="36dp"
-                        android:text="-"
+                        android:layout_width="42dp"
+                        android:layout_height="38dp"
+                        android:text="−"
                         android:textColor="@color/text_main"
-                        android:textSize="16sp"
-                        android:background="@color/bg_card" />
+                        android:textSize="18sp"
+                        android:background="@drawable/round_btn_bg" />
                     <Button
                         android:id="@+id/btnZoomPlus"
-                        android:layout_width="40dp"
-                        android:layout_height="36dp"
+                        android:layout_width="42dp"
+                        android:layout_height="38dp"
                         android:text="+"
                         android:textColor="@color/text_main"
-                        android:textSize="16sp"
-                        android:layout_marginLeft="6dp"
-                        android:background="@color/bg_card" />
+                        android:textSize="18sp"
+                        android:layout_marginLeft="8dp"
+                        android:background="@drawable/round_btn_bg" />
                 </LinearLayout>
 
                 <!-- Блок 3: Журнал блокировки -->
@@ -346,9 +370,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:background="@color/bg_surface"
-                    android:padding="12dp"
-                    android:layout_marginBottom="14dp">
+                    android:background="@drawable/card_bg"
+                    android:padding="14dp"
+                    android:layout_marginBottom="18dp">
                     <TextView
                         android:id="@+id/tvBlockedLog"
                         android:layout_width="match_parent"
@@ -374,16 +398,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:background="@color/bg_surface"
+                    android:background="@drawable/card_bg"
                     android:padding="14dp"
-                    android:layout_marginBottom="14dp">
+                    android:layout_marginBottom="18dp">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="1. Блокировка слежки и трекеров\nVirtualMax фильтрует каждый сетевой запрос на уровне Android WebView. Запросы к трекерам VK/Mail.ru (top-fwz1, counter.yadro, stat.vk.com), Яндекс Метрике, WebVisor, Sentry и внутренним метрикам MAX уничтожаются до выхода в интернет.\n\n2. Анти-Фингерпринт песочница\nВстроенный слой JavaScript защищает процессор и память смартфона от сбора уникального отпечатка, а также нейтрализует скрытые маяки sendBeacon.\n\n3. Переключатели разрешений\nЕсли тумблер Микрофона или Камеры выключен, сайт физически не может получить доступ к датчикам устройства.\n\n4. Очистка следов\nКнопка «Очистить сессию» полностью удаляет все Cookies, LocalStorage и кэш мессенджера."
                         android:textColor="@color/text_main"
-                        android:textSize="12sp"
+                        android:textSize="13sp"
                         android:lineSpacingExtra="4dp" />
                 </LinearLayout>
 
@@ -391,22 +415,22 @@
                 <Button
                     android:id="@+id/btnSettingsClear"
                     android:layout_width="match_parent"
-                    android:layout_height="44dp"
+                    android:layout_height="52dp"
                     android:text="🧹 Очистить все cookies и кэш"
                     android:textColor="#ffffff"
-                    android:background="#ff5252"
-                    android:textSize="12sp"
+                    android:background="@drawable/btn_danger_bg"
+                    android:textSize="13sp"
                     android:textStyle="bold"
-                    android:layout_marginBottom="10dp" />
+                    android:layout_marginBottom="12dp" />
 
                 <Button
                     android:id="@+id/btnSettingsBackToChat"
                     android:layout_width="match_parent"
-                    android:layout_height="44dp"
+                    android:layout_height="52dp"
                     android:text="💬 Вернуться в мессенджер"
                     android:textColor="#070a0f"
-                    android:background="@color/accent_green"
-                    android:textSize="13sp"
+                    android:background="@drawable/btn_primary_bg"
+                    android:textSize="14sp"
                     android:textStyle="bold" />
 
             </LinearLayout>
@@ -417,7 +441,7 @@
     <LinearLayout
         android:id="@+id/bottomBar"
         android:layout_width="match_parent"
-        android:layout_height="52dp"
+        android:layout_height="56dp"
         android:background="@color/bg_surface"
         android:orientation="horizontal"
         android:gravity="center_vertical">
@@ -431,6 +455,7 @@
             android:textColor="@color/accent_green"
             android:textSize="12sp"
             android:textStyle="bold"
+            android:maxLines="1"
             android:background="?android:attr/selectableItemBackground" />
 
         <Button
@@ -438,10 +463,11 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="⚙️ Настройки &amp; Гайд"
+            android:text="⚙️ Настройки"
             android:textColor="@color/text_main"
             android:textSize="12sp"
             android:textStyle="bold"
+            android:maxLines="1"
             android:background="?android:attr/selectableItemBackground" />
 
         <Button
@@ -452,6 +478,8 @@
             android:text="🧹 Сброс"
             android:textColor="@color/text_main"
             android:textSize="12sp"
+            android:textStyle="bold"
+            android:maxLines="1"
             android:background="?android:attr/selectableItemBackground" />
     </LinearLayout>
 

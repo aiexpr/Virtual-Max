@@ -84,11 +84,21 @@ cd build/bin && "$AAPT" add ../base.apk classes.dex && cd ../..
 echo "=== [7/7] Zipalign и Подпись APK ==="
 "$ZIPALIGN" -f -p 4 build/base.apk build/aligned.apk
 
+# ------------------------------------------------------------------
+# Подпись (Security):
+# Пароль и алиас читаются из переменных окружения (задающихся в CI из
+# GitHub Secrets). Для локальной сборки при отсутствии переменных
+# используется значение по умолчанию (совпадает с существующим ключом).
+# НЕ задавайте пароль в открытом виде в версионируемых файлах.
+# ------------------------------------------------------------------
+KEYSTORE_PASS="${KEYSTORE_PASS:-virtualmax123}"
+KEYSTORE_ALIAS="${KEYSTORE_ALIAS:-virtualmax}"
+
 if [ ! -f "keystore.jks" ]; then
-    keytool -genkeypair -v -keystore keystore.jks -alias virtualmax -keyalg RSA -keysize 2048 -validity 10000 -storepass virtualmax123 -keypass virtualmax123 -dname "CN=VirtualMax, OU=Privacy, O=VirtualMax, L=Moscow, ST=Moscow, C=RU"
+    keytool -genkeypair -v -keystore keystore.jks -alias "$KEYSTORE_ALIAS" -keyalg RSA -keysize 2048 -validity 10000 -storepass "$KEYSTORE_PASS" -keypass "$KEYSTORE_PASS" -dname "CN=VirtualMax, OU=Privacy, O=VirtualMax, L=Moscow, ST=Moscow, C=RU"
 fi
 
-"$APKSIGNER" sign --ks keystore.jks --ks-pass pass:virtualmax123 --ks-key-alias virtualmax --key-pass pass:virtualmax123 --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true --out ../releases/VirtualMax.apk build/aligned.apk
+"$APKSIGNER" sign --ks keystore.jks --ks-pass pass:"$KEYSTORE_PASS" --ks-key-alias "$KEYSTORE_ALIAS" --key-pass pass:"$KEYSTORE_PASS" --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true --out ../releases/VirtualMax.apk build/aligned.apk
 
 echo "🎉 УСПЕШНО! Релиз: releases/VirtualMax.apk"
 ls -lh ../releases/VirtualMax.apk
