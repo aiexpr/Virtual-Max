@@ -12,7 +12,6 @@
   <img src="https://img.shields.io/badge/Android-5.0%2B-00e676?style=for-the-badge&logo=android&logoColor=white" alt="Android Version">
   <img src="https://img.shields.io/badge/Windows-10%20%2F%2011-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Windows">
   <img src="https://img.shields.io/badge/Linux-AppImage%20%2F%20deb-fcc624?style=for-the-badge&logo=linux&logoColor=black" alt="Linux">
-  <img src="https://img.shields.io/badge/macOS-Intel%20%26%20Apple%20Silicon-black?style=for-the-badge&logo=apple&logoColor=white" alt="macOS">
   <img src="https://img.shields.io/badge/License-AGPL--3.0-purple?style=for-the-badge" alt="License">
 </p>
 
