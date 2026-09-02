@@ -1,0 +1,99 @@
+name: Build Desktop Installers
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  build-desktop:
+    name: Build (${{ matrix.platform }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            script: build:linux
+          - os: windows-latest
+            platform: windows
+            script: build:win
+            # Electron 44+ не поддерживает ia32
+          - os: macos-latest
+            platform: macos
+            script: build:mac
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+
+      - name: Validate version matches tag
+        if: startsWith(github.ref, 'refs/tags/v') && matrix.platform == 'linux'
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          APP_VERSION="$(node -p "require('./desktop/package.json').version")"
+          echo "Tag version: ${TAG}  |  App version: ${APP_VERSION}"
+          if [ "${TAG}" != "${APP_VERSION}" ]; then
+            echo "::error::Tag v${TAG} does not match version ${APP_VERSION} in desktop/package.json"
+            exit 1
+          fi
+
+      - name: Install dependencies
+        working-directory: desktop
+        run: npm ci
+
+      - name: Build installers (${{ matrix.script }})
+        working-directory: desktop
+        env:
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: npm run ${{ matrix.script }}
+
+      - name: Verify desktop artifacts
+        shell: bash
+        run: ls -la desktop/dist
+
+      - name: Upload desktop artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: VirtualMax-desktop-${{ matrix.platform }}
+          path: desktop/dist/*.{exe,AppImage,deb,dmg,zip}
+          if-no-files-found: warn
+
+  release:
+    name: Create GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build-desktop
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all desktop artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List downloaded artifacts
+        shell: bash
+        run: find artifacts -type f | sort
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*
+          fail_on_unmatched_files: true
+          generate_release_notes: true
