@@ -3,6 +3,7 @@
   "productName": "VirtualMax",
   "version": "1.2.0",
   "description": "Приватный защищенный клиент-песочница для мессенджера МАКС (web.max.ru) на ПК (Windows, Linux, macOS)",
+  "homepage": "https://github.com/aiexpr/Virtual-Max",
   "main": "src/main/index.js",
   "scripts": {
     "start": "electron .",
@@ -20,7 +21,10 @@
     "sandboxed-browser",
     "ghost-mode"
   ],
-  "author": "VirtualMax Project",
+  "author": {
+    "name": "VirtualMax Project",
+    "email": "virtualmax@example.com"
+  },
   "license": "AGPL-3.0",
   "devDependencies": {
     "electron": "^44.0.0",
@@ -41,8 +45,7 @@
         {
           "target": "nsis",
           "arch": [
-            "x64",
-            "ia32"
+            "x64"
           ]
         },
         {
@@ -67,7 +70,8 @@
         "deb"
       ],
       "icon": "assets/icon.png",
-      "category": "Network;Chat;InstantMessaging"
+      "category": "Network;Chat;InstantMessaging",
+      "maintainer": "VirtualMax Project <virtualmax@example.com>"
     },
     "mac": {
       "target": [
