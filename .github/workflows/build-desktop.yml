@@ -6,15 +6,11 @@ on:
       - 'v*'
   workflow_dispatch:
 
-# Создание/обновление GitHub Release требует прав на запись в репозиторий.
-# actions: write — для загрузки/скачивания артефактов.
 permissions:
   contents: write
   actions: write
 
 jobs:
-  # Каждая ОС собирает свой нативный набор установщиков (быстрее и надёжнее,
-  # чем кросс-компиляция всех платформ с одной ОС).
   build-desktop:
     name: Build (${{ matrix.platform }})
     runs-on: ${{ matrix.os }}
@@ -28,15 +24,14 @@ jobs:
           - os: windows-latest
             platform: windows
             script: build:win
+            # Electron 44+ не поддерживает ia32
           - os: macos-latest
             platform: macos
             script: build:mac
     steps:
-      # 1. Клонирование репозитория
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Node 20 + кэш npm по desktop/package-lock.json
       - name: Set up Node.js 20
         uses: actions/setup-node@v4
         with:
@@ -44,8 +39,6 @@ jobs:
           cache: npm
           cache-dependency-path: desktop/package-lock.json
 
-      # Валидация: версия тега должна совпадать с version в package.json.
-      # Проверяется один раз на linux-агенте (package.json одинаков для всех ОС).
       - name: Validate version matches tag
         if: startsWith(github.ref, 'refs/tags/v') && matrix.platform == 'linux'
         shell: bash
@@ -54,19 +47,14 @@ jobs:
           APP_VERSION="$(node -p "require('./desktop/package.json').version")"
           echo "Tag version: ${TAG}  |  App version: ${APP_VERSION}"
           if [ "${TAG}" != "${APP_VERSION}" ]; then
-            echo "::error::Tag v${TAG} does not match version ${APP_VERSION} in desktop/package.json. Please bump the version before tagging."
+            echo "::error::Tag v${TAG} does not match version ${APP_VERSION} in desktop/package.json"
             exit 1
           fi
 
-      # 3. Установка зависимостей (детерминированно из package-lock.json)
       - name: Install dependencies
         working-directory: desktop
         run: npm ci
 
-      # 4. Сборка установщиков для текущей ОС.
-      #    macOS: подпись/нотаризация выполняется только при наличии
-      #    Apple-секретов (CSC_LINK/CSC_KEY_PASSWORD/APPLE_ID/...).
-      #    Без них сборка .dmg/.zip идёт с ad-hoc подписью и НЕ блокируется.
       - name: Build installers (${{ matrix.script }})
         working-directory: desktop
         env:
@@ -77,28 +65,17 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: npm run ${{ matrix.script }}
 
-      # 5. Проверка, что артефакты собраны
       - name: Verify desktop artifacts
         shell: bash
-        run: |
-          echo "--- desktop/dist contents ---"
-          ls -la desktop/dist
+        run: ls -la desktop/dist
 
-      # 6. Загрузка артефактов в Actions (всегда, удобно для ручной проверки)
       - name: Upload desktop artifacts
         uses: actions/upload-artifact@v4
         with:
           name: VirtualMax-desktop-${{ matrix.platform }}
-          path: |
-            desktop/dist/*.exe
-            desktop/dist/*.AppImage
-            desktop/dist/*.deb
-            desktop/dist/*.dmg
-            desktop/dist/*.zip
+          path: desktop/dist/*.{exe,AppImage,deb,dmg,zip}
           if-no-files-found: warn
 
-  # 7. Единый релиз: собирает артефакты со всех ОС в один GitHub Release.
-  #    Запускается только на теге v* и только после успешной сборки всех ОС.
   release:
     name: Create GitHub Release
     if: startsWith(github.ref, 'refs/tags/v')
@@ -117,8 +94,6 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          # Используем рекурсивный glob: upload-artifact сохраняет вложенную
-          # структуру каталогов внутри артефакта.
           files: artifacts/**/*
           fail_on_unmatched_files: true
           generate_release_notes: true
