@@ -29,7 +29,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.ScrollView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,9 +42,9 @@ import java.util.Locale;
 public class MainActivity extends Activity {
 
     private WebView webView;
-    private ScrollView settingsContainer;
+    private View topBar, bottomBar, settingsContainer;
     private TextView tvShieldStatus, tvZoomValue, tvBlockedLog;
-    private Button btnBack, btnReload, btnTopToggle;
+    private Button btnBack, btnReload, btnTopToggle, btnHideUI;
     private Button btnNavMessenger, btnNavSettings, btnNavClear;
     private Button btnSettingsClear, btnSettingsBackToChat;
     private Button btnZoomMinus, btnZoomPlus;
@@ -67,6 +66,9 @@ public class MainActivity extends Activity {
     private static final String KEY_PROXY_HOST = "proxy_host";
     private static final String KEY_PROXY_PORT = "proxy_port";
     private static final String KEY_PROXY_ENABLED = "proxy_enabled";
+    private static final String KEY_UI_VISIBLE = "ui_visible";
+
+    private boolean uiVisible = true;
 
     private static final String TARGET_URL = "https://web.max.ru";
     private static final String UA_MOBILE = "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36";
@@ -79,6 +81,7 @@ public class MainActivity extends Activity {
 
         prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         currentZoom = prefs.getInt(KEY_ZOOM, 100);
+        uiVisible = prefs.getBoolean(KEY_UI_VISIBLE, true);
 
         // View Binding
         webView = findViewById(R.id.webView);
@@ -90,6 +93,10 @@ public class MainActivity extends Activity {
         btnBack = findViewById(R.id.btnBack);
         btnReload = findViewById(R.id.btnReload);
         btnTopToggle = findViewById(R.id.btnTopToggle);
+        btnHideUI = findViewById(R.id.btnHideUI);
+
+        topBar = findViewById(R.id.topBar);
+        bottomBar = findViewById(R.id.bottomBar);
 
         btnNavMessenger = findViewById(R.id.btnNavMessenger);
         btnNavSettings = findViewById(R.id.btnNavSettings);
@@ -114,6 +121,12 @@ public class MainActivity extends Activity {
 
         applySystemInsets();
 
+        // Применяем сохранённое состояние UI
+        if (!uiVisible) {
+            topBar.setVisibility(View.GONE);
+            bottomBar.setVisibility(View.GONE);
+        }
+
         webView.loadUrl(TARGET_URL);
     }
 
@@ -124,8 +137,6 @@ public class MainActivity extends Activity {
      */
     private void applySystemInsets() {
         View root = findViewById(R.id.root);
-        View topBar = findViewById(R.id.topBar);
-        View bottomBar = findViewById(R.id.bottomBar);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             root.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
@@ -167,6 +178,19 @@ public class MainActivity extends Activity {
         settings.setMediaPlaybackRequiresUserGesture(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setTextZoom(currentZoom);
+
+        // Оптимизация для производительности
+        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        settings.setRenderPriority(WebSettings.RenderPriority.HIGH);
+        settings.setEnableSmoothTransition(true);
+        
+        // Отключаем тяжёлые функции для FPS
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            webView.setRendererPriorityPolicy(
+                WebView.RendererPriorityPolicy.IMPORTANCE_HIGH,
+                false
+            );
+        }
 
         boolean isDesktop = prefs.getBoolean(KEY_DESKTOP, false);
         settings.setUserAgentString(isDesktop ? UA_DESKTOP : UA_MOBILE);
@@ -418,6 +442,13 @@ public class MainActivity extends Activity {
             }
         });
 
+        btnHideUI.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                hideUICompletely();
+            }
+        });
+
         btnNavMessenger.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -473,13 +504,13 @@ public class MainActivity extends Activity {
             }
         });
 
-        tvZoomValue.setText("Текущий масштаб: " + currentZoom + "%");
+        tvZoomValue.setText(currentZoom + "%");
     }
 
     private void updateZoom() {
         prefs.edit().putInt(KEY_ZOOM, currentZoom).apply();
         webView.getSettings().setTextZoom(currentZoom);
-        tvZoomValue.setText("Текущий масштаб: " + currentZoom + "%");
+        tvZoomValue.setText(currentZoom + "%");
     }
 
     private void setupSettingsToggles() {
@@ -556,6 +587,26 @@ public class MainActivity extends Activity {
         } else {
             showSettingsView();
         }
+    }
+
+    /**
+     * Полностью скрывает все панели UI.
+     * Для возврата UI потребуется перезапуск приложения.
+     */
+    private void hideUICompletely() {
+        topBar.setVisibility(View.GONE);
+        bottomBar.setVisibility(View.GONE);
+        uiVisible = false;
+        prefs.edit().putBoolean(KEY_UI_VISIBLE, false).apply();
+        Toast.makeText(this, "Интерфейс скрыт. Перезапустите для возврата.", Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Показать панели UI (вызывается при старте если uiVisible=true)
+     */
+    private void showUI() {
+        topBar.setVisibility(View.VISIBLE);
+        bottomBar.setVisibility(View.VISIBLE);
     }
 
     private void confirmClearData() {
