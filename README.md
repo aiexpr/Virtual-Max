@@ -58,25 +58,6 @@
 
 ---
 
-## 🔨 Сборка из исходников
-
-### Android
-\`\`\`bash
-cd mobile
-chmod +x build.sh
-./build.sh
-\`\`\`
-
-### Desktop (Windows, Linux, macOS)
-\`\`\`bash
-cd desktop
-npm install
-npm run build:win    # Windows
-npm run build:linux  # Linux
-npm run build:mac    # macOS
-\`\`\`
-
----
 
 ## ⚖️ Лицензия
 
@@ -86,15 +67,3 @@ npm run build:mac    # macOS
 
 ---
 
-## 📂 Структура
-
-\`\`\`
-VirtualMax/
-├── mobile/          # Android (Java, WebView)
-│   ├── app/        # Код и ресурсы
-│   └── build.sh    # Скрипт сборки APK
-├── desktop/        # Electron (Windows, Linux, macOS)
-│   ├── src/        # Исходный код
-│   └── assets/     # Иконки
-└── releases/       # Готовые сборки
-\`\`\`
