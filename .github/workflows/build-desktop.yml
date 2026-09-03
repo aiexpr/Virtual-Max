@@ -71,7 +71,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: VirtualMax-desktop-${{ matrix.platform }}
-          path: dist/*.{exe,AppImage,deb,dmg,zip}
+          path: desktop/dist/**
           if-no-files-found: warn
 
   release:
