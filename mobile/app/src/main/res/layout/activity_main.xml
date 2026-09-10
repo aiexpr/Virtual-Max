@@ -43,9 +43,9 @@
             android:id="@+id/btnReload"
             android:layout_width="42dp"
             android:layout_height="42dp"
-            android:text="⟳"
+            android:text="🔄"
             android:textColor="@color/text_main"
-            android:textSize="19sp"
+            android:textSize="15sp"
             android:contentDescription="Обновить"
             android:background="?android:attr/selectableItemBackgroundBorderless" />
 
@@ -80,9 +80,9 @@
             android:id="@+id/btnHideUI"
             android:layout_width="42dp"
             android:layout_height="42dp"
-            android:text="⤢"
+            android:text="✕"
             android:textColor="@color/text_secondary"
-            android:textSize="17sp"
+            android:textSize="15sp"
             android:contentDescription="Скрыть панели"
             android:background="?android:attr/selectableItemBackgroundBorderless" />
     </LinearLayout>

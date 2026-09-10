@@ -11,9 +11,18 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$DIR"
 
 echo "=== [1/8] Генерация иконок VirtualMax ==="
-# Устанавливаем Pillow если его нет (для локальной сборки)
-pip3 install --quiet --break-system-packages --user Pillow 2>/dev/null || true
-python3 tools/gen_icons.py
+# Иконки закоммичены в репозиторий — генерация нужна только при изменении логотипа.
+if python3 -c "import PIL" 2>/dev/null; then
+    python3 tools/gen_icons.py
+else
+    # Пытаемся поставить Pillow (для локальной сборки), при неудаче пропускаем.
+    pip3 install --quiet --break-system-packages --user Pillow 2>/dev/null || true
+    if python3 -c "import PIL" 2>/dev/null; then
+        python3 tools/gen_icons.py
+    else
+        echo "    Pillow недоступен — использую закоммиченные иконки."
+    fi
+fi
 
 echo "=== [2/8] Подготовка рабочих директорий ==="
 rm -rf build
