@@ -33,7 +33,7 @@ public class PrivacyInterceptor {
      */
     private static final Set<String> BLOCKED_HOSTS;
     static {
-        Set<String> s = new HashSet<>(96);
+        Set<String> s = new HashSet<String>(96);
         // --- VK / Mail.ru трекеры ---
         Collections.addAll(s,
             "top-fwz1.mail.ru", "counter.yadro.ru", "t.mail.ru", "ad.mail.ru",

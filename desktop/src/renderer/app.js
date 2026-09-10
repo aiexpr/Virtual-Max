@@ -27,6 +27,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   let currentZoom = 1.0;
 
+  function applyZoom() {
+    const clamped = Math.round(currentZoom * 10) / 10;
+    currentZoom = clamped;
+    webview.setZoomFactor(clamped);
+    zoomLabel.textContent = `${Math.round(clamped * 100)}%`;
+  }
+
+  function persistZoom() {
+    if (window.VirtualMaxAPI) {
+      window.VirtualMaxAPI.updateConfig({ textZoom: Math.round(currentZoom * 100) });
+    }
+  }
+
   // Load configuration
   if (window.VirtualMaxAPI) {
     try {
@@ -35,7 +48,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         chkMic.checked = !!cfg.allowMic;
         chkCamera.checked = !!cfg.allowCamera;
         chkNotifications.checked = !!cfg.allowNotifications;
-        chkGhost.checked = !!cfg.ghostMode;
+        chkGhost.checked = cfg.ghostMode !== false;
+        if (cfg.textZoom) {
+          currentZoom = cfg.textZoom / 100;
+          applyZoom();
+        }
       }
     } catch (e) {}
 
@@ -43,7 +60,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.VirtualMaxAPI.onBlockedEvent((data) => {
       txtShieldStatus.textContent = `🛡️ VirtualMax: ${data.count} заблокировано`;
       if (data.log && data.log.length > 0) {
-        liveLogBox.innerHTML = data.log.map(item => `<div>• ${item}</div>`).join('');
+        liveLogBox.textContent = '';
+        data.log.forEach((item) => {
+          const row = document.createElement('div');
+          row.textContent = `• ${item}`;
+          liveLogBox.appendChild(row);
+        });
       }
     });
   }
@@ -60,7 +82,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  [chkMic, chkCamera, chkNotifications, chkGhost].forEach(chk => {
+  [chkMic, chkCamera, chkNotifications, chkGhost].forEach((chk) => {
     chk.addEventListener('change', saveConfig);
   });
 
@@ -81,28 +103,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     webview.loadURL('https://web.max.ru');
   });
 
-  // Zoom controls
+  // Zoom controls (70–160%, сохраняется между запусками)
   btnZoomIn.addEventListener('click', () => {
-    if (currentZoom < 1.6) {
-      currentZoom += 0.1;
-      webview.setZoomFactor(currentZoom);
-      zoomLabel.textContent = `${Math.round(currentZoom * 100)}%`;
+    if (currentZoom < 1.6 - 1e-9) {
+      currentZoom = Math.min(1.6, Math.round((currentZoom + 0.1) * 10) / 10);
+      applyZoom();
+      persistZoom();
     }
   });
 
   btnZoomOut.addEventListener('click', () => {
-    if (currentZoom > 0.7) {
-      currentZoom -= 0.1;
-      webview.setZoomFactor(currentZoom);
-      zoomLabel.textContent = `${Math.round(currentZoom * 100)}%`;
+    if (currentZoom > 0.7 + 1e-9) {
+      currentZoom = Math.max(0.7, Math.round((currentZoom - 0.1) * 10) / 10);
+      applyZoom();
+      persistZoom();
     }
   });
 
-  // Settings Overlay toggle
+  // Settings Overlay
   function openSettings() {
     settingsOverlay.classList.remove('hidden');
   }
-
   function closeSettings() {
     settingsOverlay.classList.add('hidden');
   }
@@ -110,6 +131,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   btnToggleSettings.addEventListener('click', openSettings);
   btnCloseSettings.addEventListener('click', closeSettings);
   btnBackToChat.addEventListener('click', closeSettings);
+  // Клик по статус-бейджу щита также открывает настройки/журнал.
+  const shieldBadge = document.getElementById('btn-shield-status');
+  if (shieldBadge) shieldBadge.addEventListener('click', openSettings);
 
   // Clear Session & Cache
   async function clearSession() {
@@ -129,14 +153,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Hotkeys
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'F5' || (e.ctrlKey && e.key.toLowerCase() === 'r')) {
+    const key = e.key.toLowerCase();
+    if (e.key === 'F5' || ((e.ctrlKey || e.metaKey) && key === 'r')) {
+      e.preventDefault();
       webview.reload();
     } else if (e.key === 'Escape') {
       closeSettings();
-    } else if (e.ctrlKey && e.key === '=') {
+    } else if ((e.ctrlKey || e.metaKey) && (key === '=' || key === '+')) {
+      e.preventDefault();
       btnZoomIn.click();
-    } else if (e.ctrlKey && e.key === '-') {
+    } else if ((e.ctrlKey || e.metaKey) && key === '-') {
+      e.preventDefault();
       btnZoomOut.click();
+    } else if ((e.ctrlKey || e.metaKey) && key === '0') {
+      e.preventDefault();
+      currentZoom = 1;
+      applyZoom();
+      persistZoom();
+    } else if ((e.ctrlKey || e.metaKey) && key === ',') {
+      e.preventDefault();
+      openSettings();
+    } else if (e.altKey && key === 'arrowleft') {
+      if (webview.canGoBack()) webview.goBack();
+    } else if (e.altKey && key === 'arrowright') {
+      if (webview.canGoForward()) webview.goForward();
     }
   });
 });

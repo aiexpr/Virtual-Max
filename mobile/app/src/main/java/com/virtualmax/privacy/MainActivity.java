@@ -67,7 +67,7 @@ public class MainActivity extends Activity {
     private final AtomicInteger blockedCount = new AtomicInteger(0);
     private int currentZoom = 100;
     private boolean blockingEnabled = true;
-    private final LinkedList<String> blockedLogList = new LinkedList<>();
+    private final LinkedList<String> blockedLogList = new LinkedList<String>();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private boolean shieldUiScheduled = false;
 
@@ -234,7 +234,7 @@ public class MainActivity extends Activity {
             }
 
             @Override
-            public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
+            public boolean onJsAlert(WebView view, String url, final String message, final JsResult result) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -260,7 +260,7 @@ public class MainActivity extends Activity {
             }
 
             @Override
-            public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) {
+            public boolean onJsConfirm(WebView view, String url, final String message, final JsResult result) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -308,7 +308,7 @@ public class MainActivity extends Activity {
                         if (request.getUrl() == null) return true;
                         final String popupUrl = request.getUrl().toString();
                         String popupHost = Uri.parse(popupUrl).getHost();
-                        boolean popupIsMax = popupHost != null
+                        final boolean popupIsMax = popupHost != null
                             && (popupHost.equals("max.ru") || popupHost.endsWith(".max.ru"));
                         runOnUiThread(new Runnable() {
                             @Override
@@ -405,8 +405,8 @@ public class MainActivity extends Activity {
 
         webView.setDownloadListener(new DownloadListener() {
             @Override
-            public void onDownloadStart(String url, String userAgent, String contentDisposition,
-                                        String mimetype, long contentLength) {
+            public void onDownloadStart(final String url, final String userAgent, final String contentDisposition,
+                                        final String mimetype, long contentLength) {
                 prepareDownload(url, userAgent, contentDisposition, mimetype);
             }
         });
@@ -422,8 +422,8 @@ public class MainActivity extends Activity {
         boolean allowMic = prefs.getBoolean(KEY_MIC, true);
         boolean allowCamera = prefs.getBoolean(KEY_CAMERA, false);
 
-        final List<String> wanted = new ArrayList<>();
-        final List<String> osPerms = new ArrayList<>();
+        final List<String> wanted = new ArrayList<String>();
+        final List<String> osPerms = new ArrayList<String>();
 
         for (String res : request.getResources()) {
             if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(res) && allowMic) {
@@ -482,7 +482,7 @@ public class MainActivity extends Activity {
                 return;
             }
 
-            List<String> granted = new ArrayList<>();
+            List<String> granted = new ArrayList<String>();
             for (String res : pendingWebPermission.getResources()) {
                 if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(res)
                     && prefs.getBoolean(KEY_MIC, true) && micGranted) {
@@ -550,7 +550,7 @@ public class MainActivity extends Activity {
         contentIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,
             params.getMode() == WebChromeClient.FileChooserParams.MODE_OPEN_MULTIPLE);
 
-        List<Intent> extras = new ArrayList<>();
+        List<Intent> extras = new ArrayList<Intent>();
         cameraImageUri = null;
 
         if (params.isCaptureEnabled() && wantsImage) {
@@ -714,7 +714,7 @@ public class MainActivity extends Activity {
                     shieldUiScheduled = false;
                     int shown = blockedCount.get();
                     tvShieldStatus.setText("🛡️ " + shown);
-                    tvShieldStatus.setContentDescription("Заблокировано трекеров: " + count);
+                    tvShieldStatus.setContentDescription("Заблокировано трекеров: " + shown);
                     StringBuilder sb = new StringBuilder();
                     synchronized (blockedLogList) {
                         for (String item : blockedLogList) {

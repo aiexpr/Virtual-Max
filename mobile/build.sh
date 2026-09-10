@@ -69,15 +69,26 @@ echo "=== [3/8] Компиляция ресурсов (aapt2 compile) ==="
 "$AAPT2" compile --dir app/src/main/res -o build/res.zip
 
 echo "=== [4/8] Линковка ресурсов и генерация R.java (aapt2 link) ==="
+# AGP берёт package из namespace; автономный aapt2 требует атрибут package
+# в манифесте. Подставляем его во временную копию, исходник не трогаем.
+APP_PACKAGE="com.virtualmax.privacy"
+# Версии — единый источник истины в app/build.gradle.
+VERSION_NAME=$(grep -m1 'versionName' app/build.gradle | sed -E 's/.*"([^"]+)".*/\1/')
+VERSION_CODE=$(grep -m1 'versionCode' app/build.gradle | sed -E 's/[^0-9]*([0-9]+).*/\1/')
+MIN_SDK=$(grep -m1 'minSdk' app/build.gradle | sed -E 's/[^0-9]*([0-9]+).*/\1/')
+TARGET_SDK=$(grep -m1 'targetSdk' app/build.gradle | sed -E 's/[^0-9]*([0-9]+).*/\1/')
+echo "    Версия: ${VERSION_NAME} (${VERSION_CODE}), SDK ${MIN_SDK}…${TARGET_SDK}"
+sed "0,/<manifest /s//<manifest package=\"${APP_PACKAGE}\" /" \
+    app/src/main/AndroidManifest.xml > build/AndroidManifest.xml
 "$AAPT2" link \
     -I "$ANDROID_JAR" \
-    --manifest app/src/main/AndroidManifest.xml \
+    --manifest build/AndroidManifest.xml \
     -R build/res.zip \
     --java build/gen \
-    --min-sdk-version 21 \
-    --target-sdk-version 34 \
-    --version-code 4 \
-    --version-name 1.3.0 \
+    --min-sdk-version "$MIN_SDK" \
+    --target-sdk-version "$TARGET_SDK" \
+    --version-code "$VERSION_CODE" \
+    --version-name "$VERSION_NAME" \
     --auto-add-overlay \
     -o build/base.apk
 
