@@ -103,11 +103,15 @@ public class PrivacyInterceptor {
         StringBuilder js = new StringBuilder(6 * 1024);
         js.append("(function(){");
         js.append("'use strict';");
-        js.append("if(window.__VIRTUALMAX_SHIELD__){return;}");
+        // Повторная инъекция (смена тумблеров) только обновляет флаги,
+        // хуки не переустанавливаются (иначе они наслаивались бы друг на друга).
+        js.append("if(window.__VIRTUALMAX_SHIELD__){window.__VM_SET__(");
+        js.append(ghostMode).append(",").append(blockNotifications).append(");return;}");
         js.append("window.__VIRTUALMAX_SHIELD__=true;");
 
         js.append("var GHOST=").append(ghostMode).append(";");
         js.append("var BLOCK_NOTIFS=").append(blockNotifications).append(";");
+        js.append("window.__VM_SET__=function(g,n){GHOST=g;BLOCK_NOTIFS=n;applyNotifPolicy();};");
 
         // Предкомпилированные регулярные выражения (создаются один раз на страницу).
         js.append("var TELEMETRY=/(?:telemetry|metrics|analytics|collector|webvisor|c_stat(?:\\.php)?|");
@@ -156,7 +160,8 @@ public class PrivacyInterceptor {
         js.append("}catch(e){}");
 
         // 4. Ghost Mode: WebSocket — глушение пакетов typing/composing.
-        js.append("if(GHOST&&window.WebSocket){");
+        //    Обёртка ставится всегда, живой флаг GHOST проверяется в send().
+        js.append("if(window.WebSocket){");
         js.append("try{");
         js.append("var OWS=window.WebSocket;");
         js.append("function VMWS(){");
@@ -164,7 +169,8 @@ public class PrivacyInterceptor {
         js.append("try{inst=new(Function.prototype.bind.apply(OWS,[null].concat([].slice.call(arguments))));}catch(e){inst=new OWS(arguments[0]);}");
         js.append("var oS=inst.send.bind(inst);");
         js.append("inst.send=function(data){");
-        js.append("if(typeof data==='string'){");
+        // Решение принимаем по ЖИВОМУ флагу GHOST, а не по значению на момент инсталляции.
+        js.append("if(GHOST&&typeof data==='string'){");
         js.append("try{var j=JSON.parse(data);");
         js.append("var t=String((j&&(j.type||j.event||j.action||j.method||j.cmd))||'');");
         js.append("if(TYPING.test(t)){return;}");
@@ -245,15 +251,15 @@ public class PrivacyInterceptor {
         js.append("window.addEventListener('devicemotion',function(e){e.stopImmediatePropagation();},true);");
 
         // 10. Блокировка Web Notification (когда тумблер выключен).
-        js.append("if(BLOCK_NOTIFS&&('Notification' in window)){");
-        js.append("try{");
-        js.append("var BN=function(){this.close=function(){};};");
-        js.append("BN.permission='denied';");
-        js.append("BN.requestPermission=function(){return Promise.resolve('denied');};");
-        js.append("BN.prototype.close=function(){};");
-        js.append("window.Notification=BN;");
-        js.append("}catch(e){}");
+        js.append("function VMBlockedNotification(){this.close=function(){};}");
+        js.append("VMBlockedNotification.permission='denied';");
+        js.append("VMBlockedNotification.requestPermission=function(){return Promise.resolve('denied');};");
+        js.append("VMBlockedNotification.prototype.close=function(){};");
+        js.append("function applyNotifPolicy(){");
+        js.append("if(BLOCK_NOTIFS&&('Notification' in window)&&window.Notification!==VMBlockedNotification){");
+        js.append("window.Notification=VMBlockedNotification;}");
         js.append("}");
+        js.append("applyNotifPolicy();");
 
         js.append("})();");
         return js.toString();
