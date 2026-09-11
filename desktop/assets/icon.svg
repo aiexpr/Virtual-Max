@@ -9,17 +9,17 @@
       <stop offset="1" stop-color="#00b25f"/>
     </linearGradient>
     <radialGradient id="glow" cx="0.5" cy="0.46" r="0.55">
-      <stop offset="0" stop-color="#00e676" stop-opacity="0.16"/>
+      <stop offset="0" stop-color="#00e676" stop-opacity="0.20"/>
       <stop offset="1" stop-color="#00e676" stop-opacity="0"/>
     </radialGradient>
   </defs>
   <rect x="0" y="0" width="512" height="512" rx="102" fill="url(#bg)"/>
   <rect x="0" y="0" width="512" height="512" rx="102" fill="url(#glow)"/>
-  <path d="M133 133 H379 V256 C379 307 354 348 256 430 C158 348 133 307 133 256 Z"
+  <path d="M118 108 H394 V256 C394 312 366 358 256 440 C146 358 118 312 118 256 Z"
         fill="url(#shield)" stroke="#ffffff" stroke-opacity="0.35" stroke-width="10"/>
-  <path d="M184 171 H328 A23 23 0 0 1 351 194 V256 A23 23 0 0 1 328 279 H184 A23 23 0 0 1 161 256 V194 A23 23 0 0 1 184 171 Z"
+  <path d="M186 174 H326 A23 23 0 0 1 349 197 V256 A23 23 0 0 1 326 279 H186 A23 23 0 0 1 163 256 V197 A23 23 0 0 1 186 174 Z"
         fill="#ffffff"/>
-  <path d="M228 201 L207 248 L269 231 Z" fill="#ffffff"/>
-  <path d="M223 197 L256 247 L289 197" fill="none" stroke="#00a75d"
-        stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M231 205 L207 254 L273 236 Z" fill="#ffffff"/>
+  <path d="M222 200 L256 252 L290 200" fill="none" stroke="#00a75d"
+        stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

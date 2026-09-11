@@ -93,19 +93,18 @@ def build_logo(size, transparent_corners=True):
     draw_soft_glow(img, (size * 0.5, size * 0.46), size * 0.52, GLOW, 40)
 
     def pt(u, v):
-        """Перевод единичных координат (0..1) в пиксели с отступом."""
-        m = size * 0.06
-        return (m + u * (size - 2 * m), m + v * (size - 2 * m))
+        """Перевод единичных координат (0..1) в пиксели холста."""
+        return (u * size, v * size)
 
     # --- щит -------------------------------------------------------------
-    tl = pt(0.26, 0.26)
-    tr = pt(0.74, 0.26)
-    mid_r = pt(0.74, 0.50)
-    mid_l = pt(0.26, 0.50)
-    bottom = pt(0.50, 0.84)
+    tl = pt(0.23, 0.21)
+    tr = pt(0.77, 0.21)
+    mid_r = pt(0.77, 0.50)
+    mid_l = pt(0.23, 0.50)
+    bottom = pt(0.50, 0.815)
 
-    right_curve = quad_bezier(mid_r, pt(0.74, 0.70), bottom)
-    left_curve = quad_bezier(bottom, pt(0.26, 0.70), mid_l)
+    right_curve = quad_bezier(mid_r, pt(0.77, 0.68), bottom)
+    left_curve = quad_bezier(bottom, pt(0.23, 0.68), mid_l)
     outline = [tl, tr, mid_r] + right_curve[1:] + left_curve[1:]
 
     shield_grad = vertical_gradient(size, SHIELD_TOP, SHIELD_BOTTOM)
@@ -121,26 +120,26 @@ def build_logo(size, transparent_corners=True):
     img.alpha_composite(shield)
 
     # --- речевой пузырёк --------------------------------------------------
-    bx0, by0 = pt(0.36, 0.335)
-    bx1, by1 = pt(0.64, 0.545)
-    radius = 0.045 * (size * 0.88)
-    tail = [pt(0.445, 0.545), pt(0.385, 0.615), pt(0.525, 0.545)]
+    bx0, by0 = pt(0.355, 0.34)
+    bx1, by1 = pt(0.645, 0.555)
+    radius = 0.048 * size
+    tail = [pt(0.45, 0.555), pt(0.385, 0.625), pt(0.53, 0.555)]
 
     draw = ImageDraw.Draw(img)
     draw.rounded_rectangle([bx0, by0, bx1, by1], radius=radius, fill=WHITE)
     draw.polygon(tail, fill=WHITE)
 
     # --- литера «V» -------------------------------------------------------
-    v_left = pt(0.435, 0.385)
-    v_bottom = pt(0.50, 0.482)
-    v_right = pt(0.565, 0.385)
-    stroke = max(3, int(size * 0.032))
+    v_left = pt(0.435, 0.395)
+    v_bottom = pt(0.50, 0.492)
+    v_right = pt(0.565, 0.395)
+    stroke = max(3, int(size * 0.034))
     draw.line([v_left, v_bottom, v_right], fill=V_COLOR, width=stroke, joint='curve')
     for p in (v_left, v_bottom, v_right):
         r = stroke / 2
         draw.ellipse([p[0] - r, p[1] - r, p[0] + r, p[1] + r], fill=V_COLOR)
 
-    # --- прозрачные скруглённые углы (для legacy-иконок и desktop) --------
+    # --- прозрачные скруглённые углы (для desktop) ------------------------
     if transparent_corners:
         corner = Image.new('L', (size, size), 0)
         ImageDraw.Draw(corner).rounded_rectangle(
@@ -159,6 +158,19 @@ def generate_logo(final_size, out_path):
     print(f"Generated: {out_path} ({final_size}x{final_size})")
 
 
+def build_logo_with_margins(size):
+    """
+    Лого с рамкой (как в Android legacy-иконках): рисунок занимает 88% холста,
+    остальное — фон. Вызывается ПЕРЕД скруглением углов.
+    """
+    inner = int(size * 0.88)
+    off = (size - inner) // 2
+    art = build_logo(inner, transparent_corners=False)
+    canvas = vertical_gradient(size, BG_TOP, BG_BOTTOM)
+    canvas.paste(art, (off, off), art)
+    return canvas
+
+
 def write_master_svg(path):
     """Мастер-вектор логотипа (SVG), используется в документации."""
     svg = """<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
@@ -172,19 +184,19 @@ def write_master_svg(path):
       <stop offset="1" stop-color="#00b25f"/>
     </linearGradient>
     <radialGradient id="glow" cx="0.5" cy="0.46" r="0.55">
-      <stop offset="0" stop-color="#00e676" stop-opacity="0.16"/>
+      <stop offset="0" stop-color="#00e676" stop-opacity="0.20"/>
       <stop offset="1" stop-color="#00e676" stop-opacity="0"/>
     </radialGradient>
   </defs>
   <rect x="0" y="0" width="512" height="512" rx="102" fill="url(#bg)"/>
   <rect x="0" y="0" width="512" height="512" rx="102" fill="url(#glow)"/>
-  <path d="M133 133 H379 V256 C379 307 354 348 256 430 C158 348 133 307 133 256 Z"
+  <path d="M118 108 H394 V256 C394 312 366 358 256 440 C146 358 118 312 118 256 Z"
         fill="url(#shield)" stroke="#ffffff" stroke-opacity="0.35" stroke-width="10"/>
-  <path d="M184 171 H328 A23 23 0 0 1 351 194 V256 A23 23 0 0 1 328 279 H184 A23 23 0 0 1 161 256 V194 A23 23 0 0 1 184 171 Z"
+  <path d="M186 174 H326 A23 23 0 0 1 349 197 V256 A23 23 0 0 1 326 279 H186 A23 23 0 0 1 163 256 V197 A23 23 0 0 1 186 174 Z"
         fill="#ffffff"/>
-  <path d="M228 201 L207 248 L269 231 Z" fill="#ffffff"/>
-  <path d="M223 197 L256 247 L289 197" fill="none" stroke="#00a75d"
-        stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M231 205 L207 254 L273 236 Z" fill="#ffffff"/>
+  <path d="M222 200 L256 252 L290 200" fill="none" stroke="#00a75d"
+        stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
 """
     with open(path, 'w', encoding='utf-8') as fh:
@@ -195,11 +207,20 @@ def write_master_svg(path):
 def main():
     os.makedirs(DESKTOP_ASSETS, exist_ok=True)
 
-    # Android legacy launcher-иконки.
+    # Android legacy launcher-иконки (со скруглённой рамкой, как раньше).
     for folder, final_size in DENSITIES.items():
         dir_path = os.path.join(RES_DIR, folder)
         os.makedirs(dir_path, exist_ok=True)
-        generate_logo(final_size, os.path.join(dir_path, 'ic_launcher.png'))
+        size = final_size * 4
+        img = build_logo_with_margins(size)
+        corner = Image.new('L', (size, size), 0)
+        ImageDraw.Draw(corner).rounded_rectangle(
+            [0, 0, size - 1, size - 1], radius=int(size * 0.20), fill=255)
+        img.putalpha(corner)
+        img = img.resize((final_size, final_size), Image.Resampling.LANCZOS)
+        out_path = os.path.join(dir_path, 'ic_launcher.png')
+        img.save(out_path, 'PNG')
+        print(f"Generated: {out_path} ({final_size}x{final_size})")
 
     # Desktop PNG + ICO + мастер-SVG.
     generate_logo(512, os.path.join(DESKTOP_ASSETS, 'icon.png'))
