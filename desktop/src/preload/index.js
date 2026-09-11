@@ -65,6 +65,27 @@ function attachToWebview() {
     } catch (_) {}
   });
 
+  // Дублирующая защита: обрабатываем запросы разрешений прямо на <webview>.
+  // В ряде версий Electron session-обработчик не вызывается для гостевых
+  // webview — без этого звонки падают с «нет доступа к микрофону».
+  wv.addEventListener('permissionrequest', (e) => {
+    try {
+      if (!e || !e.request) return;
+      const cfg = lastConfig || {};
+      let allow = false;
+      if (e.permission === 'media') {
+        allow = cfg.allowMic !== false || cfg.allowCamera === true;
+      } else if (e.permission === 'notifications') {
+        allow = cfg.allowNotifications !== false;
+      } else if (e.permission === 'fullscreen') {
+        allow = true;
+      }
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+      if (allow) e.request.allow();
+      else e.request.deny();
+    } catch (_) {}
+  });
+
   // Реакция на смену настроек (Ghost Mode / Уведомления) без перезагрузки
   ipcRenderer.on('virtualmax:config-updated', () => {
     refreshConfig().then(() => {

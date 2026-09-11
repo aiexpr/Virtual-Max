@@ -1,0 +1,30 @@
+name: ✨ Предложение
+description: Идея по улучшению VirtualMax
+title: "[Фича]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Какую проблему это решает?
+      description: Опишите боль или неудобство, с которым вы столкнулись.
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Предлагаемое решение
+      description: Как вы видите реализацию?
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Альтернативы
+      description: Какие ещё варианты вы рассматривали?
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Дополнительный контекст
+      description: Ссылки, скриншоты, примеры — всё, что поможет понять идею.

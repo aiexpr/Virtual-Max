@@ -89,8 +89,17 @@ public class MainActivity extends Activity {
     private static final int REQ_STORAGE = 1002;
     private static final int REQ_NOTIFICATIONS = 1003;
     private static final int REQ_FILE_CHOOSER = 1004;
+    private static final int REQ_MIC = 1005;
+    private static final int REQ_CAMERA = 1006;
 
-    private PermissionRequest pendingWebPermission;
+    /**
+     * Очередь веб-запросов разрешений, ожидающих решения ОС.
+     * Мессенджер может запросить микрофон и камеру двумя отдельными
+     * PermissionRequest подряд — терять первый нельзя, иначе WebView
+     * автоматически отклонит его и звонок упадёт с «нет разрешения».
+     */
+    private final List<PermissionRequest> pendingWebPermissions =
+        new ArrayList<PermissionRequest>();
     private ValueCallback<Uri[]> filePathCallback;
     private Uri cameraImageUri;
     private Runnable pendingDownload;
@@ -428,14 +437,20 @@ public class MainActivity extends Activity {
         for (String res : request.getResources()) {
             if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(res) && allowMic) {
                 wanted.add(res);
-                if (!hasPermission(Manifest.permission.RECORD_AUDIO)) {
+                if (!hasPermission(Manifest.permission.RECORD_AUDIO)
+                    && !osPerms.contains(Manifest.permission.RECORD_AUDIO)) {
                     osPerms.add(Manifest.permission.RECORD_AUDIO);
                 }
             } else if (PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(res) && allowCamera) {
                 wanted.add(res);
-                if (!hasPermission(Manifest.permission.CAMERA)) {
+                if (!hasPermission(Manifest.permission.CAMERA)
+                    && !osPerms.contains(Manifest.permission.CAMERA)) {
                     osPerms.add(Manifest.permission.CAMERA);
                 }
+            } else if (PermissionRequest.RESOURCE_PROTECTED_MEDIA_ID.equals(res)) {
+                // DRM-идентификатор не раскрывает приватные данные, но его отказ
+                // на части прошивок роняет весь getUserMedia-запрос.
+                wanted.add(res);
             }
         }
 
@@ -444,12 +459,26 @@ public class MainActivity extends Activity {
             return;
         }
 
-        if (!osPerms.isEmpty()) {
-            pendingWebPermission = request;
-            requestPermissions(osPerms.toArray(new String[0]), REQ_WEB_PERMISSIONS);
+        // Разрешения ОС уже выданы — отвечаем веб-странице немедленно.
+        if (osPerms.isEmpty()) {
+            grantSafely(request, wanted);
             return;
         }
-        request.grant(wanted.toArray(new String[0]));
+
+        // Нужен системный диалог. Кладём запрос в очередь и ждём ответ ОС.
+        synchronized (pendingWebPermissions) {
+            pendingWebPermissions.add(request);
+        }
+        requestPermissions(osPerms.toArray(new String[0]), REQ_WEB_PERMISSIONS);
+    }
+
+    /** Безопасная выдача разрешения: при ошибке WebView откатываемся на deny. */
+    private void grantSafely(PermissionRequest request, List<String> resources) {
+        try {
+            request.grant(resources.toArray(new String[0]));
+        } catch (Exception e) {
+            try { request.deny(); } catch (Exception ignored) { }
+        }
     }
 
     private boolean hasPermission(String perm) {
@@ -463,6 +492,33 @@ public class MainActivity extends Activity {
         }
     }
 
+    /** Понятный диалог, если система отказала в доступе к микрофону/камере. */
+    private void showPermissionDeniedDialog() {
+        new AlertDialog.Builder(MainActivity.this, R.style.VirtualMaxDialog)
+            .setTitle("Нет доступа к микрофону/камере")
+            .setMessage("Система не выдала разрешение. Разрешите доступ к микрофону и "
+                + "камере в настройках Android, чтобы звонить, отправлять голосовые "
+                + "сообщения и снимать видео.")
+            .setPositiveButton("Открыть настройки", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    openAppSettings();
+                }
+            })
+            .setNegativeButton("Отмена", null)
+            .show();
+    }
+
+    /** Открывает системную страницу разрешений приложения VirtualMax. */
+    private void openAppSettings() {
+        try {
+            Intent intent = new Intent(
+                android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.parse("package:" + getPackageName()));
+            startActivity(intent);
+        } catch (Exception ignored) { }
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -471,34 +527,58 @@ public class MainActivity extends Activity {
             boolean micGranted = hasPermission(Manifest.permission.RECORD_AUDIO);
             boolean camGranted = hasPermission(Manifest.permission.CAMERA);
 
-            // Синхронизация тумблеров после запроса из настроек.
-            if (pendingWebPermission == null) {
-                if (switchMic.isChecked() != micGranted) switchMic.setChecked(micGranted);
-                if (switchCamera.isChecked() != camGranted) switchCamera.setChecked(camGranted);
-                prefs.edit()
-                    .putBoolean(KEY_MIC, micGranted)
-                    .putBoolean(KEY_CAMERA, camGranted)
-                    .apply();
-                return;
+            List<PermissionRequest> requests;
+            synchronized (pendingWebPermissions) {
+                requests = new ArrayList<PermissionRequest>(pendingWebPermissions);
+                pendingWebPermissions.clear();
             }
 
-            List<String> granted = new ArrayList<String>();
-            for (String res : pendingWebPermission.getResources()) {
-                if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(res)
-                    && prefs.getBoolean(KEY_MIC, true) && micGranted) {
-                    granted.add(res);
-                } else if (PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(res)
-                    && prefs.getBoolean(KEY_CAMERA, false) && camGranted) {
-                    granted.add(res);
+            for (PermissionRequest pending : requests) {
+                List<String> granted = new ArrayList<String>();
+                for (String res : pending.getResources()) {
+                    if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(res)
+                        && prefs.getBoolean(KEY_MIC, true) && micGranted) {
+                        granted.add(res);
+                    } else if (PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(res)
+                        && prefs.getBoolean(KEY_CAMERA, false) && camGranted) {
+                        granted.add(res);
+                    } else if (PermissionRequest.RESOURCE_PROTECTED_MEDIA_ID.equals(res)) {
+                        granted.add(res);
+                    }
+                }
+                if (granted.isEmpty()) {
+                    pending.deny();
+                } else {
+                    grantSafely(pending, granted);
                 }
             }
-            if (granted.isEmpty()) {
-                pendingWebPermission.deny();
-                Toast.makeText(this, "Разрешение не выдано системой", Toast.LENGTH_SHORT).show();
-            } else {
-                pendingWebPermission.grant(granted.toArray(new String[0]));
+
+            if (requests.isEmpty() || !micGranted || !camGranted) {
+                // Ничего из запрошенного системой не выдано — подсказываем пользователю.
+                boolean anyAudio = false;
+                boolean anyVideo = false;
+                for (PermissionRequest pending : requests) {
+                    for (String res : pending.getResources()) {
+                        if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(res)) anyAudio = true;
+                        else if (PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(res)) anyVideo = true;
+                    }
+                }
+                if ((anyAudio && !micGranted) || (anyVideo && !camGranted)) {
+                    showPermissionDeniedDialog();
+                }
             }
-            pendingWebPermission = null;
+            return;
+        }
+
+        if (requestCode == REQ_MIC || requestCode == REQ_CAMERA) {
+            boolean granted = grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED;
+            if (granted) {
+                Toast.makeText(this, requestCode == REQ_MIC
+                    ? "🎙️ Микрофон доступен" : "📷 Камера доступна", Toast.LENGTH_SHORT).show();
+            } else {
+                showPermissionDeniedDialog();
+            }
             return;
         }
 
@@ -862,7 +942,7 @@ public class MainActivity extends Activity {
             public void onCheckedChanged(CompoundButton b, final boolean on) {
                 prefs.edit().putBoolean(KEY_MIC, on).apply();
                 if (on && !hasPermission(Manifest.permission.RECORD_AUDIO)) {
-                    requestOsPermission(Manifest.permission.RECORD_AUDIO, REQ_WEB_PERMISSIONS);
+                    requestOsPermission(Manifest.permission.RECORD_AUDIO, REQ_MIC);
                 }
                 Toast.makeText(MainActivity.this,
                     on ? "🎙️ Микрофон разрешён" : "🎙️ Микрофон заблокирован",
@@ -875,7 +955,7 @@ public class MainActivity extends Activity {
             public void onCheckedChanged(CompoundButton b, final boolean on) {
                 prefs.edit().putBoolean(KEY_CAMERA, on).apply();
                 if (on && !hasPermission(Manifest.permission.CAMERA)) {
-                    requestOsPermission(Manifest.permission.CAMERA, REQ_WEB_PERMISSIONS);
+                    requestOsPermission(Manifest.permission.CAMERA, REQ_CAMERA);
                 }
                 Toast.makeText(MainActivity.this,
                     on ? "📷 Камера разрешена" : "📷 Камера заблокирована",

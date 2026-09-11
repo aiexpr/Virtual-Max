@@ -1,0 +1,23 @@
+# Нормализация переводов строк и бинарных файлов
+* text=auto
+
+# Текстовые файлы
+*.js   text eol=lf
+*.java text eol=lf
+*.xml  text eol=lf
+*.json text eol=lf
+*.md   text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.sh   text eol=lf
+*.py   text eol=lf
+*.gradle text eol=lf
+*.properties text eol=lf
+*.bat  text eol=crlf
+
+# Бинарные файлы (не diff'ить как текст)
+*.png  binary
+*.jpg  binary
+*.ico  binary
+*.jks  binary
+*.apk  binary

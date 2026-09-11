@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, session, shell, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, session, shell, Menu, systemPreferences } = require('electron');
 const path = require('path');
 const { configManager } = require('./config');
 const { shouldBlockUrl, cleanUrlParams } = require('./blocklist');
@@ -85,18 +85,46 @@ function createWindow() {
     });
   }
 
-  // Permission Request Handler
-  appSession.setPermissionRequestHandler((webContents, permission, callback) => {
+  // Permission Request Handler.
+  // Для «media» проверяем, какие именно датчики запрашивает страница
+  // (audio/video), и выдаём доступ точечно в соответствии с тумблерами.
+  appSession.setPermissionRequestHandler((webContents, permission, callback, details) => {
     const currentCfg = configManager.getAll();
     if (permission === 'media') {
-      callback(currentCfg.allowMic || currentCfg.allowCamera);
+      const types = details && Array.isArray(details.mediaTypes) ? details.mediaTypes : [];
+      const wantsAudio = types.includes('audio');
+      const wantsVideo = types.includes('video');
+      const allow = types.length === 0
+        ? (currentCfg.allowMic || currentCfg.allowCamera)
+        : ((wantsAudio && currentCfg.allowMic) || (wantsVideo && currentCfg.allowCamera));
+      if (allow) ensureMacMediaAccess(types);
+      callback(allow);
       return;
     }
     if (permission === 'notifications') {
       callback(!!currentCfg.allowNotifications);
       return;
     }
+    // Полноэкранный режим (в т.ч. видеозвонки) — безвреден.
+    if (permission === 'fullscreen') {
+      callback(true);
+      return;
+    }
     callback(false);
+  });
+
+  // Синхронные проверки (navigator.permissions.query и т.п.) — та же политика.
+  appSession.setPermissionCheckHandler((webContents, permission, requestingOrigin, details) => {
+    const currentCfg = configManager.getAll();
+    if (permission === 'media') {
+      const types = details && Array.isArray(details.mediaTypes) ? details.mediaTypes : [];
+      if (types.length === 0) return currentCfg.allowMic || currentCfg.allowCamera;
+      return (types.includes('audio') && currentCfg.allowMic)
+        || (types.includes('video') && currentCfg.allowCamera);
+    }
+    if (permission === 'notifications') return !!currentCfg.allowNotifications;
+    if (permission === 'fullscreen') return true;
+    return false;
   });
 
   // External Links Handling (окна уровня основного процесса)
@@ -134,6 +162,25 @@ function setupMenu() {
     }
   ];
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+}
+
+// macOS: доступ к микрофону/камере требует явного согласия на уровне ОС
+// (плюс NSMicrophoneUsageDescription/NSCameraUsageDescription в Info.plist).
+async function ensureMacMediaAccess(mediaTypes) {
+  if (process.platform !== 'darwin') return;
+  const types = Array.isArray(mediaTypes) ? mediaTypes : [];
+  try {
+    if (types.includes('audio')
+        && systemPreferences.getMediaAccessStatus('microphone') !== 'granted') {
+      await systemPreferences.askForMediaAccess('microphone');
+    }
+    if (types.includes('video')
+        && systemPreferences.getMediaAccessStatus('camera') !== 'granted') {
+      await systemPreferences.askForMediaAccess('camera');
+    }
+  } catch (e) {
+    console.error('[VirtualMax] macOS media access request failed:', e.message);
+  }
 }
 
 // Открыть ссылку в системном браузере, предварительно вырезав трекинг-метки.
