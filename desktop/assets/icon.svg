@@ -8,18 +8,18 @@
       <stop offset="0" stop-color="#23f08f"/>
       <stop offset="1" stop-color="#00b25f"/>
     </linearGradient>
-    <radialGradient id="glow" cx="0.5" cy="0.46" r="0.55">
-      <stop offset="0" stop-color="#00e676" stop-opacity="0.20"/>
+    <radialGradient id="glow" cx="0.5" cy="0.46" r="0.62">
+      <stop offset="0" stop-color="#00e676" stop-opacity="0.22"/>
       <stop offset="1" stop-color="#00e676" stop-opacity="0"/>
     </radialGradient>
   </defs>
   <rect x="0" y="0" width="512" height="512" rx="102" fill="url(#bg)"/>
   <rect x="0" y="0" width="512" height="512" rx="102" fill="url(#glow)"/>
-  <path d="M118 108 H394 V256 C394 312 366 358 256 440 C146 358 118 312 118 256 Z"
+  <path d="M82 82 H430 V266 C430 330 396 368 256 433 C116 368 82 330 82 266 Z"
         fill="url(#shield)" stroke="#ffffff" stroke-opacity="0.35" stroke-width="10"/>
-  <path d="M186 174 H326 A23 23 0 0 1 349 197 V256 A23 23 0 0 1 326 279 H186 A23 23 0 0 1 163 256 V197 A23 23 0 0 1 186 174 Z"
+  <path d="M179 169 H333 A26 26 0 0 1 359 195 V256 A26 26 0 0 1 333 282 H179 A26 26 0 0 1 153 256 V195 A26 26 0 0 1 179 169 Z"
         fill="#ffffff"/>
-  <path d="M231 205 L207 254 L273 236 Z" fill="#ffffff"/>
-  <path d="M222 200 L256 252 L290 200" fill="none" stroke="#00a75d"
+  <path d="M230 282 L195 320 L271 282 Z" fill="#ffffff"/>
+  <path d="M223 205 L256 253 L289 205" fill="none" stroke="#00a75d"
         stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

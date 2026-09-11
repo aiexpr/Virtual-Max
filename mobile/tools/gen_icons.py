@@ -90,21 +90,21 @@ def build_logo(size, transparent_corners=True):
     img = vertical_gradient(size, BG_TOP, BG_BOTTOM)
     draw = ImageDraw.Draw(img)
     # Мягкое свечение за щитом.
-    draw_soft_glow(img, (size * 0.5, size * 0.46), size * 0.52, GLOW, 40)
+    draw_soft_glow(img, (size * 0.5, size * 0.46), size * 0.60, GLOW, 46)
 
     def pt(u, v):
         """Перевод единичных координат (0..1) в пиксели холста."""
         return (u * size, v * size)
 
     # --- щит -------------------------------------------------------------
-    tl = pt(0.23, 0.21)
-    tr = pt(0.77, 0.21)
-    mid_r = pt(0.77, 0.50)
-    mid_l = pt(0.23, 0.50)
-    bottom = pt(0.50, 0.815)
+    tl = pt(0.16, 0.16)
+    tr = pt(0.84, 0.16)
+    mid_r = pt(0.84, 0.52)
+    mid_l = pt(0.16, 0.52)
+    bottom = pt(0.50, 0.845)
 
-    right_curve = quad_bezier(mid_r, pt(0.77, 0.68), bottom)
-    left_curve = quad_bezier(bottom, pt(0.23, 0.68), mid_l)
+    right_curve = quad_bezier(mid_r, pt(0.84, 0.70), bottom)
+    left_curve = quad_bezier(bottom, pt(0.16, 0.70), mid_l)
     outline = [tl, tr, mid_r] + right_curve[1:] + left_curve[1:]
 
     shield_grad = vertical_gradient(size, SHIELD_TOP, SHIELD_BOTTOM)
@@ -120,20 +120,20 @@ def build_logo(size, transparent_corners=True):
     img.alpha_composite(shield)
 
     # --- речевой пузырёк --------------------------------------------------
-    bx0, by0 = pt(0.355, 0.34)
-    bx1, by1 = pt(0.645, 0.555)
-    radius = 0.048 * size
-    tail = [pt(0.45, 0.555), pt(0.385, 0.625), pt(0.53, 0.555)]
+    bx0, by0 = pt(0.35, 0.33)
+    bx1, by1 = pt(0.65, 0.55)
+    radius = 0.05 * size
+    tail = [pt(0.45, 0.55), pt(0.38, 0.625), pt(0.53, 0.55)]
 
     draw = ImageDraw.Draw(img)
     draw.rounded_rectangle([bx0, by0, bx1, by1], radius=radius, fill=WHITE)
     draw.polygon(tail, fill=WHITE)
 
     # --- литера «V» -------------------------------------------------------
-    v_left = pt(0.435, 0.395)
-    v_bottom = pt(0.50, 0.492)
-    v_right = pt(0.565, 0.395)
-    stroke = max(3, int(size * 0.034))
+    v_left = pt(0.435, 0.40)
+    v_bottom = pt(0.50, 0.495)
+    v_right = pt(0.565, 0.40)
+    stroke = max(3, int(size * 0.036))
     draw.line([v_left, v_bottom, v_right], fill=V_COLOR, width=stroke, joint='curve')
     for p in (v_left, v_bottom, v_right):
         r = stroke / 2
@@ -160,10 +160,10 @@ def generate_logo(final_size, out_path):
 
 def build_logo_with_margins(size):
     """
-    Лого с рамкой (как в Android legacy-иконках): рисунок занимает 88% холста,
+    Лого с рамкой (как в Android legacy-иконках): рисунок занимает 90% холста,
     остальное — фон. Вызывается ПЕРЕД скруглением углов.
     """
-    inner = int(size * 0.88)
+    inner = int(size * 0.90)
     off = (size - inner) // 2
     art = build_logo(inner, transparent_corners=False)
     canvas = vertical_gradient(size, BG_TOP, BG_BOTTOM)
@@ -183,19 +183,19 @@ def write_master_svg(path):
       <stop offset="0" stop-color="#23f08f"/>
       <stop offset="1" stop-color="#00b25f"/>
     </linearGradient>
-    <radialGradient id="glow" cx="0.5" cy="0.46" r="0.55">
-      <stop offset="0" stop-color="#00e676" stop-opacity="0.20"/>
+    <radialGradient id="glow" cx="0.5" cy="0.46" r="0.62">
+      <stop offset="0" stop-color="#00e676" stop-opacity="0.22"/>
       <stop offset="1" stop-color="#00e676" stop-opacity="0"/>
     </radialGradient>
   </defs>
   <rect x="0" y="0" width="512" height="512" rx="102" fill="url(#bg)"/>
   <rect x="0" y="0" width="512" height="512" rx="102" fill="url(#glow)"/>
-  <path d="M118 108 H394 V256 C394 312 366 358 256 440 C146 358 118 312 118 256 Z"
+  <path d="M82 82 H430 V266 C430 330 396 368 256 433 C116 368 82 330 82 266 Z"
         fill="url(#shield)" stroke="#ffffff" stroke-opacity="0.35" stroke-width="10"/>
-  <path d="M186 174 H326 A23 23 0 0 1 349 197 V256 A23 23 0 0 1 326 279 H186 A23 23 0 0 1 163 256 V197 A23 23 0 0 1 186 174 Z"
+  <path d="M179 169 H333 A26 26 0 0 1 359 195 V256 A26 26 0 0 1 333 282 H179 A26 26 0 0 1 153 256 V195 A26 26 0 0 1 179 169 Z"
         fill="#ffffff"/>
-  <path d="M231 205 L207 254 L273 236 Z" fill="#ffffff"/>
-  <path d="M222 200 L256 252 L290 200" fill="none" stroke="#00a75d"
+  <path d="M230 282 L195 320 L271 282 Z" fill="#ffffff"/>
+  <path d="M223 205 L256 253 L289 205" fill="none" stroke="#00a75d"
         stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
 """

@@ -20,13 +20,13 @@
         </aapt:attr>
     </path>
 
-    <!-- Мягкое изумрудное свечение (усилено под увеличенный щит) -->
+    <!-- Мягкое изумрудное свечение (усилено под крупный щит) -->
     <path
         android:fillColor="#00E676"
-        android:fillAlpha="0.14"
-        android:pathData="M54,4a50,50 0 1,0 0.1,0z" />
+        android:fillAlpha="0.16"
+        android:pathData="M54,2a52,52 0 1,0 0.1,0z" />
     <path
         android:fillColor="#00E676"
-        android:fillAlpha="0.07"
-        android:pathData="M54,-8a62,62 0 1,0 0.1,0z" />
+        android:fillAlpha="0.08"
+        android:pathData="M54,-10a64,64 0 1,0 0.1,0z" />
 </vector>
