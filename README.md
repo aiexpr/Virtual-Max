@@ -61,7 +61,9 @@
 | Android | `VirtualMax.apk` |
 | Windows | `.exe` (установщик), `.exe` (portable) |
 | Linux | `.AppImage`, `.deb` |
-| macOS | `.dmg`, `.zip` |
+| macOS | `.dmg`, `.zip` — локальная сборка (`npm run build:mac`) |
+
+GitHub Actions автоматически собирает APK, установщики Windows и пакеты Linux; сборку для macOS можно запустить локально (`cd desktop && npm ci && npm run build:mac`).
 
 Готовые релизы: [Releases](https://github.com/aiexpr/Virtual-Max/releases)
 
