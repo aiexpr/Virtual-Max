@@ -1,23 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Хвостик речевого пузырька -->
+
+    <!-- Щит приватности (крупный изумрудный градиент) -->
+    <path android:pathData="M20,20 H88 V52 C88,68 77,80 54,90 C31,80 20,68 20,52 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="54"
+                android:startY="20"
+                android:endX="54"
+                android:endY="90"
+                android:startColor="#23F08F"
+                android:endColor="#00B25F" />
+        </aapt:attr>
+    </path>
+
+    <!-- Тонкая светлая окантовка щита -->
     <path
-        android:fillColor="#ffffff"
-        android:pathData="M38,62 L28,78 L53,73 Z" />
-    <!-- Сам пузырёк -->
+        android:pathData="M20,20 H88 V52 C88,68 77,80 54,90 C31,80 20,68 20,52 Z"
+        android:strokeColor="#33FFFFFF"
+        android:strokeWidth="1.5"
+        android:fillColor="#00000000" />
+
+    <!-- Речевой пузырёк -->
     <path
-        android:fillColor="#ffffff"
-        android:pathData="M54,25 m-25,0 a25,25 0 1,0 50,0 a25,25 0 1,0 -50,0 Z" />
-    <!-- Буква V -->
+        android:fillColor="#FFFFFF"
+        android:pathData="M43,35 H65 A5,5 0 0 1 70,40 V54 A5,5 0 0 1 65,59 H43 A5,5 0 0 1 38,54 V40 A5,5 0 0 1 43,35 Z" />
     <path
-        android:strokeColor="#00c864"
-        android:strokeWidth="5.5"
+        android:fillColor="#FFFFFF"
+        android:pathData="M47,59 L41,66 L56,59 Z" />
+
+    <!-- Литера «V» -->
+    <path
+        android:strokeColor="#00A75D"
+        android:strokeWidth="4.5"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
         android:fillColor="#00000000"
-        android:pathData="M41,41 L54,59 L67,41" />
+        android:pathData="M46,41 L54,52 L62,41" />
 </vector>

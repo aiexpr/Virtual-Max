@@ -1,0 +1,60 @@
+name: 🐛 Отчёт об ошибке
+description: Опишите проблему в VirtualMax, чтобы мы могли её исправить
+title: "[Баг]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Спасибо, что помогаете улучшать VirtualMax!
+        Перед отправкой проверьте, нет ли уже похожего issue.
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Платформа
+      description: Где воспроизводится проблема?
+      options:
+        - Android
+        - Windows
+        - Linux
+        - macOS
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Версия приложения
+      description: Номер версии (например, 1.4.0)
+      placeholder: "1.4.0"
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Устройство / ОС
+      description: Модель телефона и Android-версия, или версия ОС ПК
+      placeholder: "Pixel 7, Android 14 / Windows 11 23H2"
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Что произошло?
+      description: Опишите проблему и пошагово, как её воспроизвести.
+      placeholder: "1. Открываю чат… 2. Нажимаю «Позвонить»… 3. Появляется…"
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Ожидаемое поведение
+      description: Что должно было произойти?
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Скриншоты / логи
+      description: Перетащите изображения или вставьте текст логов, если есть.

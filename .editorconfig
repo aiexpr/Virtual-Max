@@ -1,0 +1,22 @@
+# https://editorconfig.org
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# JavaScript / JSON / HTML / CSS в Desktop-клиенте
+[*.{js,json,html,css}]
+indent_size = 2
+
+# Markdown — не трогаем хвостовые пробелы (переносы строк)
+[*.md]
+trim_trailing_whitespace = false
+
+# Скрипты Windows
+[*.bat]
+end_of_line = crlf

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 Документация
+    url: https://github.com/aiexpr/Virtual-Max#readme
+    about: Начните с README — там есть гайд по функциям и сборке.
+  - name: 🛡️ Политика безопасности
+    url: https://github.com/aiexpr/Virtual-Max/blob/main/SECURITY.md
+    about: Как сообщить об уязвимости.

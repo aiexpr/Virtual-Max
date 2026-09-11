@@ -1,6 +1,8 @@
 # VirtualMax — контрольные суммы релизных файлов
 # Сгенерировано: 2026-09-11
-# Актуальная версия исходного кода: v1.3.0
-# Свежие сборки (.apk, .exe, .AppImage, .deb, .dmg) генерируются GitHub Actions при создании тега v*.
+# Версия закоммиченного APK: v1.3.0 (актуальные сборки v1.4.0+ публикуются
+# GitHub Actions в GitHub Releases при создании тега v*).
+#
+# Проверка:  sha256sum -c SHA256SUMS.txt
 
 d2bcd9e71ff3b42b985801e7b51ea698afdae8277e281e5c839befe068045223  VirtualMax.apk
