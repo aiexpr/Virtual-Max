@@ -1,20 +1,5 @@
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:8.2.2'
-    }
-}
-
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
-
+// Корневой build-файл проекта VirtualMax.
+// Версия Android Gradle Plugin объявлена в app/build.gradle (plugins DSL).
 task clean(type: Delete) {
     delete rootProject.buildDir
 }

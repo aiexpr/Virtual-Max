@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Base theme: тёмный, без ActionBar, системные панели в цвет поверхности -->
+    <!-- Базовая тема: тёмная, без ActionBar -->
     <style name="AppTheme" parent="@android:style/Theme.DeviceDefault.NoActionBar">
         <item name="android:windowBackground">@color/bg_main</item>
         <item name="android:statusBarColor">@color/bg_surface</item>
@@ -10,9 +10,14 @@
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:forceDarkAllowed">false</item>
         <item name="android:windowContentOverlay">@null</item>
+        <!-- Акценты контролов (прогресс-бар, переключатели, диалоги) -->
+        <item name="android:colorAccent">@color/accent_green</item>
+        <item name="android:textColorPrimary">@color/text_main</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:alertDialogTheme">@style/VirtualMaxDialog</item>
     </style>
 
-    <!-- Тёмный диалог в брендовых цветах (для JS alert/confirm из WebView) -->
+    <!-- Тёмный диалог в брендовых цветах (JS alert/confirm из WebView) -->
     <style name="VirtualMaxDialog" parent="@android:style/Theme.DeviceDefault.Dialog.Alert">
         <item name="android:windowBackground">@drawable/dialog_bg</item>
         <item name="android:windowTitleStyle">@style/VirtualMaxDialog.Title</item>
@@ -26,5 +31,57 @@
         <item name="android:textColor">@color/accent_green</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">16sp</item>
+    </style>
+
+    <!-- Заголовок раздела в настройках -->
+    <style name="SectionHeader">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:text">@null</item>
+        <item name="android:textColor">@color/accent_green</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.08</item>
+        <item name="android:layout_marginTop">14dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+        <item name="android:layout_marginLeft">4dp</item>
+    </style>
+
+    <!-- Карточка настройки -->
+    <style name="SettingCard">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:background">@drawable/card_bg</item>
+        <item name="android:padding">14dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+    </style>
+
+    <!-- Текстовый блок внутри карточки -->
+    <style name="SettingTextBlock">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:paddingRight">8dp</item>
+    </style>
+
+    <style name="SettingTitle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:text">@null</item>
+        <item name="android:textColor">@color/text_main</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="SettingSubtitle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:text">@null</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:layout_marginTop">2dp</item>
     </style>
 </resources>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Активная вкладка нижней навигации — зелёная, остальные — серые -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_selected="true" android:color="@color/accent_green" />
+    <item android:state_activated="true" android:color="@color/accent_green" />
+    <item android:color="@color/text_secondary" />
+</selector>

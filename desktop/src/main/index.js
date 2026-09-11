@@ -8,6 +8,16 @@ const PARTITION_NAME = 'persist:virtualmax_desktop_session';
 let blockedCount = 0;
 const blockedLog = [];
 
+// Любой popup/target=_blank из ЛЮБОГО webContents (включая гостевой <webview>)
+// открывается в системном браузере с очисткой трекинг-меток; внутри приложения
+// посторонние окна не создаются.
+app.on('web-contents-created', (_event, contents) => {
+  contents.setWindowOpenHandler(({ url }) => {
+    openExternally(url);
+    return { action: 'deny' };
+  });
+});
+
 function createWindow() {
   configManager.init();
 
@@ -89,10 +99,9 @@ function createWindow() {
     callback(false);
   });
 
-  // External Links Handling
+  // External Links Handling (окна уровня основного процесса)
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    const cleanUrl = cleanUrlParams(url);
-    shell.openExternal(cleanUrl);
+    openExternally(url);
     return { action: 'deny' };
   });
 
@@ -127,7 +136,24 @@ function setupMenu() {
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
+// Открыть ссылку в системном браузере, предварительно вырезав трекинг-метки.
+function openExternally(rawUrl) {
+  try {
+    const cleanUrl = cleanUrlParams(rawUrl);
+    if (/^https?:\/\//i.test(cleanUrl)) {
+      shell.openExternal(cleanUrl);
+    }
+  } catch (e) {
+    console.error('[VirtualMax] openExternal failed:', e.message);
+  }
+}
+
 // IPC Handlers
+ipcMain.handle('virtualmax:open-external', (_event, url) => {
+  openExternally(url);
+  return true;
+});
+
 ipcMain.handle('virtualmax:get-config', () => {
   return configManager.getAll();
 });
