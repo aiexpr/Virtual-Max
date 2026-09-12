@@ -15,16 +15,26 @@ android {
     }
 
     // Подпись релизного APK.
-    // Пароли приходят из GitHub Secrets (KEYSTORE_PASS / KEYSTORE_ALIAS).
-    // Для локальной сборки работают значения по умолчанию от закоммиченного keystore.jks.
+    // Ключ и пароль — СЕКРЕТЫ, они НЕ должны лежать в git (см. SECURITY.md).
+    // Пароль приходит из GitHub Secrets (KEYSTORE_PASS / KEYSTORE_ALIAS) или
+    // через -PKEYSTORE_PASS=... при локальной сборке. Никаких значений по умолчанию:
+    // если ключ есть, а пароля нет — сборка падает.
     signingConfigs {
         release {
             def ksFile = rootProject.file("keystore.jks")
             if (ksFile.exists()) {
+                def pass = System.getenv("KEYSTORE_PASS") ?: project.findProperty("KEYSTORE_PASS")
+                def alias = System.getenv("KEYSTORE_ALIAS") ?: project.findProperty("KEYSTORE_ALIAS") ?: "virtualmax"
+                if (pass == null || pass.toString().isEmpty()) {
+                    throw new GradleException(
+                        "KEYSTORE_PASS не задан: ключ подписи найден (mobile/keystore.jks), " +
+                        "но пароль не передан. Задайте KEYSTORE_PASS через переменную окружения " +
+                        "или -PKEYSTORE_PASS=... (см. SECURITY.md).")
+                }
                 storeFile ksFile
-                storePassword System.getenv("KEYSTORE_PASS") ?: (project.findProperty("KEYSTORE_PASS") ?: "virtualmax123")
-                keyAlias System.getenv("KEYSTORE_ALIAS") ?: (project.findProperty("KEYSTORE_ALIAS") ?: "virtualmax")
-                keyPassword System.getenv("KEYSTORE_PASS") ?: (project.findProperty("KEYSTORE_PASS") ?: "virtualmax123")
+                storePassword pass.toString()
+                keyAlias alias
+                keyPassword pass.toString()
                 v1SigningEnabled true
                 v2SigningEnabled true
                 v3SigningEnabled true

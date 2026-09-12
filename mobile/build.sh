@@ -135,17 +135,23 @@ fi
 
 echo "=== [8/8] Подпись APK ==="
 # ------------------------------------------------------------------
-# Пароль и алиас читаются из переменных окружения (в CI — из Secrets).
-# Для локальной сборки работают значения по умолчанию существующего ключа.
+# Ключ и пароль подписи — секреты. Сборка НЕ генерирует ключ «на лету»
+# и не подписывает «значениями по умолчанию»: без ключа и пароля она падает.
+#   - локально: положите mobile/keystore.jks и задайте KEYSTORE_PASS;
+#   - в CI: передайте base64-ключ через secret KEYSTORE_JKS и пароль KEYSTORE_PASS.
+# См. SECURITY.md и mobile/tools/rotate_keystore.sh.
 # ------------------------------------------------------------------
-KEYSTORE_PASS="${KEYSTORE_PASS:-virtualmax123}"
 KEYSTORE_ALIAS="${KEYSTORE_ALIAS:-virtualmax}"
 
+if [ -z "${KEYSTORE_PASS:-}" ]; then
+    echo "❌ KEYSTORE_PASS не задан. Укажите пароль ключа подписи (см. SECURITY.md)." >&2
+    exit 1
+fi
+
 if [ ! -f "keystore.jks" ]; then
-    keytool -genkeypair -v -keystore keystore.jks -alias "$KEYSTORE_ALIAS" \
-        -keyalg RSA -keysize 2048 -validity 10000 \
-        -storepass "$KEYSTORE_PASS" -keypass "$KEYSTORE_PASS" \
-        -dname "CN=VirtualMax, OU=Privacy, O=VirtualMax, L=Moscow, ST=Moscow, C=RU"
+    echo "❌ keystore.jks не найден. Положите ключ в mobile/keystore.jks (локально) " >&2
+    echo "   или передайте base64-ключ через secret KEYSTORE_JKS (в CI)." >&2
+    exit 1
 fi
 
 "$APKSIGNER" sign \

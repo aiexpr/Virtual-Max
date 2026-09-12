@@ -5,14 +5,13 @@
   <br>
   <b>Защищённый кроссплатформенный клиент для мессенджера МАКС (web.max.ru)</b>
   <br>
-  <i>Ноль сбора данных • Блокировка телеметрии VK/Яндекс • Режим Невидимки • Android • Windows • Linux • macOS</i>
+  <i>Ноль сбора данных • Блокировка телеметрии VK/Яндекс • Режим Невидимки • Android • Windows • Linux</i>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Android-5.0%2B-00e676?style=for-the-badge&logo=android&logoColor=white" alt="Android 5.0+">
   <img src="https://img.shields.io/badge/Windows-10%20%2F%2011-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Windows 10/11">
   <img src="https://img.shields.io/badge/Linux-AppImage%20%2F%20deb-fcc624?style=for-the-badge&logo=linux&logoColor=black" alt="Linux">
-  <img src="https://img.shields.io/badge/macOS-dmg%20%2F%20zip-999999?style=for-the-badge&logo=apple&logoColor=white" alt="macOS">
   <img src="https://img.shields.io/badge/License-AGPL--3.0-purple?style=for-the-badge" alt="AGPL-3.0">
   <img src="https://img.shields.io/github/v/release/aiexpr/Virtual-Max?style=for-the-badge&label=Release" alt="Latest release">
 </p>
@@ -38,13 +37,19 @@
 **VirtualMax** — независимый клиент с открытым исходным кодом для мессенджера
 МАКС (`web.max.ru`), работающий по принципу **Zero-Data-Collection**:
 
-> Приложение не собирает, не хранит и не отправляет ваши данные на сторонние
-> серверы, а всю телеметрию и трекеры блокирует на уровне сетевого стека —
-> до того, как запрос покинет устройство.
+> VirtualMax блокирует известные сторонние трекеры и счётчики (VK/Mail.ru,
+> Яндекс Метрика, WebVisor, Sentry, AppMetrica), чистит ссылки от меток и
+> изолирует сессию в отдельной песочнице.
 
 Клиент — это изолированная песочница: сессия, cookies и кэш мессенджера не
 пересекаются с вашим основным браузером, а доступ к датчикам управляется
 аппаратными тумблерами.
+
+> ⚠️ **Важное ограничение.** VirtualMax убирает сторонних «свидетелей» (трекеры,
+> аналитику, снятие отпечатка устройства), но **не делает вас невидимым для
+> самого мессенджера**: сервер МАКС всегда видит, что вы авторизованы и что
+> отправляете сообщения. Отключить это на стороне клиента невозможно, и проект
+> на это не претендует.
 
 ---
 
@@ -52,10 +57,11 @@
 
 | Категория | Что делает |
 |-----------|------------|
-| 🛡️ **Zero-Telemetry** | Блокирует запросы к трекерам `VK / Mail.ru`, **Яндекс Метрике**, **WebVisor**, **Sentry**, **AppMetrica**, внутренние эндпоинты метрик МАКС, защищает IP от утечки через WebRTC, нейтрализует `navigator.sendBeacon()` |
+| 🛡️ **Zero-Telemetry** | Блокирует запросы к известным сторонним трекерам `VK / Mail.ru`, **Яндекс Метрике**, **WebVisor**, **Sentry**, **AppMetrica**, внутренние эндпоинты метрик МАКС, защищает IP от утечки через WebRTC, нейтрализует `navigator.sendBeacon()` |
 | 🎙️ **Звонки и голосовые** | Полноценные аудио/видеозвонки и голосовые сообщения с корректным запросом разрешений (Android + Desktop) |
 | 🎛️ **Тумблеры датчиков** | Микрофон, камера и уведомления включаются/выключаются на уровне приложения |
 | 👻 **Режим Невидимки** | Скрывает статус «Печатает…» и онлайн-присутствие |
+| 🏷️ **Метки пользователей** | Галочки «проверен» и цветные бейджи рядом с именами по централизованному JSON-списку (по ID) — видны внутри VirtualMax |
 | 🔗 **Чистые ссылки** | Вырезает `utm_*`, `yclid`, `fbclid`, `vk_ref` и прочие трекинг-метки из внешних ссылок |
 | 🔍 **Масштаб и режим ПК** | Регулировка шрифта 70–160 %, переключение мобильный/десктоп |
 | 📎 **Отправка файлов** | Фото, видео и документы из галереи/файлового менеджера, съёмка с камеры (Android) |
@@ -75,7 +81,7 @@
 (Android 5.0+). При первом звонке или голосовом сообщении разрешите доступ
 к микрофону — после этого звонки работают штатно.
 
-### 💻 Windows / Linux / macOS
+### 💻 Windows / Linux
 
 Скачайте установщик для вашей ОС со страницы
 [Releases](https://github.com/aiexpr/Virtual-Max/releases):
@@ -84,9 +90,6 @@
 |-----------|--------|
 | Windows 10/11 | `.exe` (установщик) или `.exe` (portable) |
 | Linux | `.AppImage`, `.deb` |
-| macOS | `.dmg`, `.zip` |
-
-> macOS-сборку также можно собрать локально: `cd desktop && npm ci && npm run build:mac`.
 
 ---
 
@@ -112,7 +115,6 @@ npm ci
 npm start             # запуск
 npm run build:win     # .exe (установщик) + portable
 npm run build:linux   # .AppImage + .deb
-npm run build:mac     # .dmg + .zip
 ```
 
 ### CI/CD
