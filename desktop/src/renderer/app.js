@@ -24,8 +24,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   const chkCamera = document.getElementById('chk-camera');
   const chkNotifications = document.getElementById('chk-notifications');
   const chkGhost = document.getElementById('chk-ghost');
+  const chkBadges = document.getElementById('chk-badges');
+  const badgesStatus = document.getElementById('badges-status');
+  const btnRefreshBadges = document.getElementById('btn-refresh-badges');
 
   let currentZoom = 1.0;
+
+  function renderBadgesStatus(cfg) {
+    if (!cfg || !badgesStatus) return;
+    if (!cfg.badgesEnabled) {
+      badgesStatus.textContent = 'Метки выключены';
+      return;
+    }
+    const n = Array.isArray(cfg.badgesCache) ? cfg.badgesCache.length : 0;
+    if (n > 0) {
+      badgesStatus.textContent = `Загружено меток: ${n}`;
+    } else {
+      badgesStatus.textContent = 'Включено, список ещё не загружен';
+    }
+  }
 
   function applyZoom() {
     const clamped = Math.round(currentZoom * 10) / 10;
@@ -49,6 +66,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         chkCamera.checked = !!cfg.allowCamera;
         chkNotifications.checked = !!cfg.allowNotifications;
         chkGhost.checked = cfg.ghostMode !== false;
+        chkBadges.checked = !!cfg.badgesEnabled;
+        renderBadgesStatus(cfg);
         if (cfg.textZoom) {
           currentZoom = cfg.textZoom / 100;
           applyZoom();
@@ -68,6 +87,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
       }
     });
+
+    // Обновление статуса меток при фоновой перекачке списка.
+    window.VirtualMaxAPI.onConfigUpdated((cfg) => {
+      if (cfg) {
+        chkBadges.checked = !!cfg.badgesEnabled;
+        renderBadgesStatus(cfg);
+      }
+    });
   }
 
   // Save configuration changes
@@ -77,13 +104,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         allowMic: chkMic.checked,
         allowCamera: chkCamera.checked,
         allowNotifications: chkNotifications.checked,
-        ghostMode: chkGhost.checked
+        ghostMode: chkGhost.checked,
+        badgesEnabled: chkBadges.checked
       });
+      const cfg = await window.VirtualMaxAPI.getConfig();
+      renderBadgesStatus(cfg);
     }
   }
 
-  [chkMic, chkCamera, chkNotifications, chkGhost].forEach((chk) => {
+  [chkMic, chkCamera, chkNotifications, chkGhost, chkBadges].forEach((chk) => {
     chk.addEventListener('change', saveConfig);
+  });
+
+  // Перекачать список меток вручную.
+  btnRefreshBadges.addEventListener('click', async () => {
+    if (!window.VirtualMaxAPI) return;
+    badgesStatus.textContent = 'Загружаю список меток…';
+    const cfg = await window.VirtualMaxAPI.refreshBadges();
+    renderBadgesStatus(cfg);
   });
 
   // Navigation

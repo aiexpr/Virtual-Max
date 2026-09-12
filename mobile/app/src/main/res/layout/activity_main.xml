@@ -237,6 +237,22 @@
                             android:trackTint="@color/switch_track" />
                     </LinearLayout>
 
+                    <!-- РАЗДЕЛ: МЕТКИ ПОЛЬЗОВАТЕЛЕЙ -->
+                    <TextView style="@style/SectionHeader" android:text="МЕТКИ ПОЛЬЗОВАТЕЛЕЙ (ГАЛОЧКИ / БЕЙДЖИ)" />
+
+                    <LinearLayout style="@style/SettingCard">
+                        <LinearLayout style="@style/SettingTextBlock">
+                            <TextView style="@style/SettingTitle" android:text="🏷️  Показывать метки" />
+                            <TextView style="@style/SettingSubtitle" android:text="Галочки «проверен» и бейджи из общего списка" />
+                        </LinearLayout>
+                        <Switch
+                            android:id="@+id/switchBadges"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:thumbTint="@color/switch_thumb"
+                            android:trackTint="@color/switch_track" />
+                    </LinearLayout>
+
                     <!-- РАЗДЕЛ: ВНЕШНИЙ ВИД -->
                     <TextView style="@style/SectionHeader" android:text="ВНЕШНИЙ ВИД" />
 

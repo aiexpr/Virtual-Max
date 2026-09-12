@@ -20,3 +20,9 @@ Thumbs.db
 .idea/
 *.iml
 .vscode/
+
+# Ключи подписи (секреты — НЕ должны попадать в git)
+*.jks
+*.keystore
+mobile/keystore.jks
+mobile/keystore.jks.backup

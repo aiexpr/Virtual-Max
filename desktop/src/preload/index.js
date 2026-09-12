@@ -1,5 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
 const { buildSandboxJs } = require('./anti-tracking');
+const { buildBadgesJs } = require('./badges');
 
 let lastConfig = null;
 
@@ -14,7 +15,8 @@ function sandboxCode() {
   const cfg = lastConfig || {};
   const ghost = cfg.ghostMode !== false;                  // по умолчанию Невидимка вкл
   const blockNotifs = cfg.allowNotifications === false;  // блокировать, если тумблер выключен
-  return buildSandboxJs(ghost, blockNotifs);
+  const badges = (cfg.badgesEnabled && Array.isArray(cfg.badgesCache)) ? cfg.badgesCache : [];
+  return buildSandboxJs(ghost, blockNotifs) + buildBadgesJs(badges);
 }
 
 function injectIntoWebview(wv) {
@@ -107,7 +109,11 @@ contextBridge.exposeInMainWorld('VirtualMaxAPI', {
   updateConfig: (config) => ipcRenderer.invoke('virtualmax:update-config', config),
   clearData: () => ipcRenderer.invoke('virtualmax:clear-data'),
   openExternal: (url) => ipcRenderer.invoke('virtualmax:open-external', url),
+  refreshBadges: () => ipcRenderer.invoke('virtualmax:refresh-badges'),
   onBlockedEvent: (callback) => {
     ipcRenderer.on('virtualmax:blocked-event', (event, data) => callback(data));
+  },
+  onConfigUpdated: (callback) => {
+    ipcRenderer.on('virtualmax:config-updated', (event, config) => callback(config));
   }
 });

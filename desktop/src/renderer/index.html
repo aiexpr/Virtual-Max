@@ -104,7 +104,26 @@
             </label>
           </div>
 
-          <!-- Раздел 3: Журнал блокировки трекеров -->
+          <!-- Раздел 3: Пользовательские метки -->
+          <div class="section-title mt-4">МЕТКИ ПОЛЬЗОВАТЕЛЕЙ (ГАЛОЧКИ / БЕЙДЖИ)</div>
+
+          <div class="setting-row">
+            <div class="setting-text">
+              <strong>🏷️ Показывать метки</strong>
+              <p>Рисовать галочки «проверен» и цветные бейджи из общего списка</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="chk-badges">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="badges-meta">
+            <span id="badges-status">Метки выключены</span>
+            <button id="btn-refresh-badges" class="btn-sm" title="Перекачать список меток">🔄 Обновить список</button>
+          </div>
+
+          <!-- Раздел 4: Журнал блокировки трекеров -->
           <div class="section-title mt-4">ЖУРНАЛ ПЕРЕХВАЧЕННЫХ ТРЕКЕРОВ (LIVE INSPECTOR)</div>
           <div class="log-box" id="live-log-box">
             <div class="log-empty">Сетевой фильтр VirtualMax активен. Запросы слежки блокируются.</div>

@@ -40,6 +40,12 @@ import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -61,7 +67,7 @@ public class MainActivity extends Activity {
     private Button btnSettingsClear, btnSettingsBackToChat;
     private Button btnZoomMinus, btnZoomPlus;
     private Switch switchMic, switchCamera, switchNotifications, switchGhost,
-            switchDesktop, switchBlocking;
+            switchDesktop, switchBlocking, switchBadges;
 
     // ------------------------------------------------------------ state
     private final AtomicInteger blockedCount = new AtomicInteger(0);
@@ -81,6 +87,9 @@ public class MainActivity extends Activity {
     private static final String KEY_BLOCKING = "blocking_enabled";
     private static final String KEY_ZOOM = "text_zoom";
     private static final String KEY_UI_VISIBLE = "ui_visible";
+    private static final String KEY_BADGES = "badges_enabled";
+    private static final String KEY_BADGES_URL = "badges_url";
+    private static final String KEY_BADGES_CACHE = "badges_cache";
 
     private boolean uiVisible = true;
 
@@ -107,6 +116,9 @@ public class MainActivity extends Activity {
     private SimpleDateFormat timeFormat;
 
     private static final String TARGET_URL = "https://web.max.ru";
+    private static final String DEFAULT_BADGES_URL =
+        "https://raw.githubusercontent.com/aiexpr/Virtual-Max/main/badges.example.json";
+    private static final int BADGES_MAX_ITEMS = 5000;
     private static final String UA_MOBILE =
         "Mozilla/5.0 (Linux; Android 14; Mobile; rv:126.0) AppleWebKit/537.36 "
         + "(KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36";
@@ -130,6 +142,9 @@ public class MainActivity extends Activity {
         setupControls();
         setupSettingsToggles();
         applySystemInsets();
+
+        // Фоновая загрузка списка меток, если функция включена.
+        if (prefs.getBoolean(KEY_BADGES, false)) refreshBadges();
 
         if (!uiVisible) {
             topBar.setVisibility(View.GONE);
@@ -173,6 +188,7 @@ public class MainActivity extends Activity {
         switchGhost = findViewById(R.id.switchGhost);
         switchDesktop = findViewById(R.id.switchDesktop);
         switchBlocking = findViewById(R.id.switchBlocking);
+        switchBadges = findViewById(R.id.switchBadges);
     }
 
     /**
@@ -813,9 +829,84 @@ public class MainActivity extends Activity {
         try {
             boolean ghost = prefs.getBoolean(KEY_GHOST, true);
             boolean blockNotifs = !prefs.getBoolean(KEY_NOTIFICATIONS, true);
-            webView.evaluateJavascript(
-                PrivacyInterceptor.buildSandboxJs(ghost, blockNotifs), null);
+            String js = PrivacyInterceptor.buildSandboxJs(ghost, blockNotifs);
+            // Движок меток вставляется всегда: с пустым списком он очищает ранее
+            // нарисованные метки (например, при выключении тумблера).
+            String cache = prefs.getBoolean(KEY_BADGES, false)
+                ? prefs.getString(KEY_BADGES_CACHE, null)
+                : null;
+            js += PrivacyInterceptor.buildBadgesJs(cache);
+            webView.evaluateJavascript(js, null);
         } catch (Exception ignored) { }
+    }
+
+    /** Фоновая загрузка централизованного списка меток по URL. */
+    private void refreshBadges() {
+        final boolean enabled = prefs.getBoolean(KEY_BADGES, false);
+        final String url = prefs.getString(KEY_BADGES_URL, DEFAULT_BADGES_URL);
+        if (!enabled || url == null || url.trim().isEmpty()) return;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final String json = fetchBadgesJson(url);
+                if (json != null) {
+                    prefs.edit().putString(KEY_BADGES_CACHE, json).apply();
+                    mainHandler.post(new Runnable() {
+                        @Override
+                        public void run() { injectSandbox(); }
+                    });
+                } else {
+                    mainHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(MainActivity.this,
+                                "Не удалось загрузить список меток", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }
+        }).start();
+    }
+
+    /** Скачивает и нормализует JSON-список меток (объект с `users` или массив). */
+    private String fetchBadgesJson(String urlStr) {
+        HttpURLConnection conn = null;
+        try {
+            URL url = new URL(urlStr);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(10000);
+            conn.setRequestProperty("User-Agent", "VirtualMax");
+            if (conn.getResponseCode() != 200) return null;
+
+            InputStream is = conn.getInputStream();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            byte[] buf = new byte[8192];
+            int n;
+            while ((n = is.read(buf)) != -1) baos.write(buf, 0, n);
+            is.close();
+            String body = baos.toString("UTF-8");
+
+            JSONArray users;
+            try {
+                JSONObject root = new JSONObject(body);
+                users = root.optJSONArray("users");
+                if (users == null) users = new JSONArray(body);
+            } catch (Exception e) {
+                users = new JSONArray(body);
+            }
+
+            JSONArray out = new JSONArray();
+            for (int i = 0; i < users.length() && out.length() < BADGES_MAX_ITEMS; i++) {
+                JSONObject u = users.optJSONObject(i);
+                if (u != null && (u.has("id") || u.has("name"))) out.put(u);
+            }
+            return out.toString();
+        } catch (Exception e) {
+            return null;
+        } finally {
+            if (conn != null) conn.disconnect();
+        }
     }
 
     // ============================================================ controls
@@ -936,6 +1027,7 @@ public class MainActivity extends Activity {
         switchGhost.setChecked(prefs.getBoolean(KEY_GHOST, true));
         switchDesktop.setChecked(prefs.getBoolean(KEY_DESKTOP, false));
         switchBlocking.setChecked(prefs.getBoolean(KEY_BLOCKING, true));
+        switchBadges.setChecked(prefs.getBoolean(KEY_BADGES, false));
 
         switchMic.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -1010,6 +1102,23 @@ public class MainActivity extends Activity {
                     Toast.LENGTH_SHORT).show();
                 showMessengerView();
                 webView.reload();
+            }
+        });
+
+        switchBadges.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton b, boolean on) {
+                prefs.edit().putBoolean(KEY_BADGES, on).apply();
+                if (on) {
+                    refreshBadges();
+                } else {
+                    // Очистить кэш и ранее нарисованные метки.
+                    prefs.edit().remove(KEY_BADGES_CACHE).apply();
+                    injectSandbox();
+                }
+                Toast.makeText(MainActivity.this,
+                    on ? "🏷️ Метки включены" : "🏷️ Метки выключены",
+                    Toast.LENGTH_SHORT).show();
             }
         });
     }
