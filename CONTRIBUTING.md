@@ -67,7 +67,6 @@ npm ci
 npm start                     # запуск
 npm run build:linux           # .AppImage + .deb
 npm run build:win             # .exe (установщик) + portable
-npm run build:mac             # .dmg + .zip
 ```
 
 ## 🎨 Стиль кода

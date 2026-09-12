@@ -7,11 +7,10 @@
 
 > ℹ️ **Примечание:** зафиксированный в репозитории `VirtualMax.apk` — это последняя проверенная сборка, которую удалось собрать автономно (**v1.3.0**, подпись v1+v2+v3). Актуальные версии (**v1.4.0+**) публикуются в GitHub Releases при создании тега `v*` — сборка выполняется облачными раннерами GitHub Actions.
 
-### 💻 Для компьютеров (Windows, Linux, macOS):
+### 💻 Для компьютеров (Windows, Linux):
 - **`VirtualMax-<версия>-Windows-x64.zip`** — Портативная версия для Windows 10/11 (распакуйте и дважды кликните `VirtualMax.exe`).
 - **`VirtualMax-<версия>-Linux.AppImage`** — Автономный исполняемый файл для Linux (Ubuntu, Debian, Fedora, Arch).
 - **`VirtualMax-<версия>-Linux.deb`** — Пакет для Debian/Ubuntu.
-- **`VirtualMax-<версия>-mac.dmg`** — Установщик для macOS (Intel и Apple Silicon).
 
 ---
 
@@ -25,7 +24,7 @@
    git tag v1.2.0
    git push origin v1.2.0
    ```
-2. В разделе **Actions** автоматически запустятся сборки `.apk`, `.exe`, `.AppImage`, `.deb` и `.dmg`.
+2. В разделе **Actions** автоматически запустятся сборки `.apk`, `.exe`, `.AppImage` и `.deb`.
 3. Для каждого тега будет создан **GitHub Release** со всеми готовыми установщиками.
 
 Также любую сборку можно запустить вручную из вкладки **Actions** (кнопка *Run workflow*).
@@ -43,7 +42,6 @@ cd desktop
 npm install
 npm run build:win    # .exe и portable для Windows
 npm run build:linux  # .AppImage и .deb для Linux
-npm run build:mac    # .dmg для macOS
 ```
 
 ---
@@ -54,7 +52,7 @@ npm run build:mac    # .dmg для macOS
 
 ### v1.4.0
 - ✅ Исправлены звонки: устранена потеря веб-запросов разрешений при одновременном запросе микрофона и камеры (ошибка «нет разрешения»), добавлена обработка DRM-идентификатора и диалог «Открыть настройки» при отказе системы.
-- ✅ Desktop: точечная выдача медиа-разрешений (audio/video), поддержка звонков на macOS (`NSMicrophoneUsageDescription`/`NSCameraUsageDescription`), полноэкранный режим видеозвонков.
+- ✅ Desktop: точечная выдача медиа-разрешений (audio/video), полноэкранный режим видеозвонков.
 - ✅ Новая профессиональная иконка («щит приватности» + пузырёк + «V») для всех платформ.
 - ✅ Репозиторий приведён к профессиональному виду (CONTRIBUTING, шаблоны Issue/PR, CHANGELOG, EditorConfig).
 

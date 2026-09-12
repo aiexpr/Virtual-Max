@@ -2,15 +2,14 @@
   "name": "virtualmax-desktop",
   "productName": "VirtualMax",
   "version": "1.4.0",
-  "description": "Приватный защищенный клиент-песочница для мессенджера МАКС (web.max.ru) на ПК (Windows, Linux, macOS)",
+  "description": "Приватный защищенный клиент-песочница для мессенджера МАКС (web.max.ru) на ПК (Windows, Linux)",
   "homepage": "https://github.com/aiexpr/Virtual-Max",
   "main": "src/main/index.js",
   "scripts": {
     "start": "electron .",
-    "build:all": "electron-builder -mwl",
+    "build:all": "electron-builder -wl",
     "build:linux": "electron-builder --linux",
-    "build:win": "electron-builder --win",
-    "build:mac": "electron-builder --mac"
+    "build:win": "electron-builder --win"
   },
   "keywords": [
     "max-messenger",
@@ -72,18 +71,6 @@
       "icon": "assets/icon.png",
       "category": "Network;Chat;InstantMessaging",
       "maintainer": "VirtualMax Project <virtualmax@example.com>"
-    },
-    "mac": {
-      "target": [
-        "dmg",
-        "zip"
-      ],
-      "icon": "assets/icon.png",
-      "category": "public.app-category.social-networking",
-      "extendInfo": {
-        "NSMicrophoneUsageDescription": "VirtualMax использует микрофон для голосовых сообщений и звонков в мессенджере МАКС.",
-        "NSCameraUsageDescription": "VirtualMax использует камеру для видеозвонков и отправки фото."
-      }
     }
   }
 }
