@@ -1,7 +1,8 @@
-const { app, BrowserWindow, ipcMain, session, shell, Menu, systemPreferences } = require('electron');
+const { app, BrowserWindow, ipcMain, session, shell, Menu } = require('electron');
 const path = require('path');
 const { configManager } = require('./config');
 const { shouldBlockUrl, cleanUrlParams } = require('./blocklist');
+const { fetchBadgesList } = require('./badges');
 
 let mainWindow = null;
 const PARTITION_NAME = 'persist:virtualmax_desktop_session';
@@ -97,7 +98,6 @@ function createWindow() {
       const allow = types.length === 0
         ? (currentCfg.allowMic || currentCfg.allowCamera)
         : ((wantsAudio && currentCfg.allowMic) || (wantsVideo && currentCfg.allowCamera));
-      if (allow) ensureMacMediaAccess(types);
       callback(allow);
       return;
     }
@@ -136,6 +136,9 @@ function createWindow() {
   mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
 
   setupMenu();
+
+  // Фоновая загрузка списка меток (если функция включена).
+  refreshBadges().catch(() => {});
 }
 
 function setupMenu() {
@@ -164,25 +167,6 @@ function setupMenu() {
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
-// macOS: доступ к микрофону/камере требует явного согласия на уровне ОС
-// (плюс NSMicrophoneUsageDescription/NSCameraUsageDescription в Info.plist).
-async function ensureMacMediaAccess(mediaTypes) {
-  if (process.platform !== 'darwin') return;
-  const types = Array.isArray(mediaTypes) ? mediaTypes : [];
-  try {
-    if (types.includes('audio')
-        && systemPreferences.getMediaAccessStatus('microphone') !== 'granted') {
-      await systemPreferences.askForMediaAccess('microphone');
-    }
-    if (types.includes('video')
-        && systemPreferences.getMediaAccessStatus('camera') !== 'granted') {
-      await systemPreferences.askForMediaAccess('camera');
-    }
-  } catch (e) {
-    console.error('[VirtualMax] macOS media access request failed:', e.message);
-  }
-}
-
 // Открыть ссылку в системном браузере, предварительно вырезав трекинг-метки.
 function openExternally(rawUrl) {
   try {
@@ -192,6 +176,21 @@ function openExternally(rawUrl) {
     }
   } catch (e) {
     console.error('[VirtualMax] openExternal failed:', e.message);
+  }
+}
+
+// Загрузить централизованный список меток и разослать обновление в рендерер.
+async function refreshBadges() {
+  const cfg = configManager.getAll();
+  if (!cfg.badgesEnabled || !cfg.badgesUrl) return;
+  try {
+    const list = await fetchBadgesList(cfg.badgesUrl);
+    configManager.update({ badgesCache: list, badgesUpdatedAt: Date.now() });
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('virtualmax:config-updated', configManager.getAll());
+    }
+  } catch (e) {
+    console.error('[VirtualMax] refreshBadges failed:', e.message);
   }
 }
 
@@ -206,12 +205,23 @@ ipcMain.handle('virtualmax:get-config', () => {
 });
 
 ipcMain.handle('virtualmax:update-config', (event, newConfig) => {
+  const prev = configManager.getAll();
   configManager.update(newConfig);
+  const next = configManager.getAll();
+  // Если метки только что включили (или сменили URL) — перекачиваем список.
+  if (next.badgesEnabled && (!prev.badgesEnabled || prev.badgesUrl !== next.badgesUrl)) {
+    refreshBadges().catch(() => {});
+  }
   // Уведомляем preload/renderer — песочница переинъектируется с новыми настройками
   if (event.sender && !event.sender.isDestroyed()) {
     event.sender.send('virtualmax:config-updated', configManager.getAll());
   }
   return true;
+});
+
+ipcMain.handle('virtualmax:refresh-badges', async () => {
+  await refreshBadges();
+  return configManager.getAll();
 });
 
 ipcMain.handle('virtualmax:clear-data', async () => {
@@ -226,5 +236,5 @@ ipcMain.handle('virtualmax:clear-data', async () => {
 app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+  app.quit();
 });

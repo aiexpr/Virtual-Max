@@ -13,7 +13,11 @@ const DEFAULT_CONFIG = {
   proxyType: 'socks5',
   proxyHost: '127.0.0.1',
   proxyPort: '9050',
-  targetUrl: 'https://web.max.ru'
+  targetUrl: 'https://web.max.ru',
+  badgesEnabled: false,
+  badgesUrl: 'https://raw.githubusercontent.com/aiexpr/Virtual-Max/main/badges.example.json',
+  badgesCache: null,
+  badgesUpdatedAt: 0
 };
 
 // Файлы конфигурации старых версий (для миграции)
