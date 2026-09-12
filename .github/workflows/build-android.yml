@@ -53,20 +53,19 @@ jobs:
         run: |
           sdkmanager "platforms;android-34" "build-tools;34.0.0"
 
-      # 4. Ключ подписи.
-      #    Приоритет: секрет KEYSTORE_JKS (base64) -> упакованный в репо keystore.jks.
-      #    Это позволяет хранить приватный ключ вне git при наличии секрета.
-      - name: Prepare signing keystore (from secret if provided)
+      # 4. Ключ подписи — ТОЛЬКО из секрета. В репозитории ключа больше нет,
+      #    поэтому при отсутствии секрета сборка падает (fail-closed).
+      - name: Prepare signing keystore (from secret)
         shell: bash
         env:
           KEYSTORE_JKS: ${{ secrets.KEYSTORE_JKS }}
         run: |
-          if [ -n "$KEYSTORE_JKS" ]; then
-            printf '%s' "$KEYSTORE_JKS" | base64 -d > mobile/keystore.jks
-            echo "Using keystore from secret 'KEYSTORE_JKS'."
-          else
-            echo "No 'KEYSTORE_JKS' secret set — using committed mobile/keystore.jks."
+          if [ -z "$KEYSTORE_JKS" ]; then
+            echo "::error::Секрет 'KEYSTORE_JKS' не задан. Добавьте base64-ключ подписи в GitHub Secrets (см. SECURITY.md, mobile/tools/rotate_keystore.sh)."
+            exit 1
           fi
+          printf '%s' "$KEYSTORE_JKS" | base64 -d > mobile/keystore.jks
+          echo "Keystore decoded from secret 'KEYSTORE_JKS'."
 
       # 5. Сборка кастомным скриптом (БЕЗ Gradle)
       - name: Build APK with custom script
